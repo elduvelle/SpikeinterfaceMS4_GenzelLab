@@ -30,3 +30,5 @@ Input the directory of the file you want to spikesort
 Input the name of the file you want to spikesort it need to be to the .mda format (can be exported from trode)
 
 It will use the the inbuilt function of spikeinterface to run mountainsort and export to phy the result.
+
+Warning to run the script you need to use crtl+A and F9
