@@ -12,7 +12,6 @@ import spikeinterface.toolkit as st
 import spikeinterface.sorters as ss
 import spikeinterface.comparison as sc
 import spikeinterface.widgets as sw
-from mountainlab_pytools import mdaio
 import tempfile
 
 os.environ['TEMPDIR'] = tempfile.gettempdir()
