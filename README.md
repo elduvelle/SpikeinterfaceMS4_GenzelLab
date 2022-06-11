@@ -34,6 +34,6 @@ navigate to the Trodes folder and then type
 
   (this will create 1 file per tetrode, which is what Mountainsort expects)
 
-Change the `directory` and `name` variables to correspond to the data directory and the name of the tetrode .mda file to be sorted.
+Open the script 'ScriptMS4.py' and change the `directory` and `name` variables to correspond to the data directory and the name of the tetrode .mda file to be sorted.
 
 It will use the inbuilt function of spikeinterface to run mountainsort and export to phy the result.
