@@ -23,6 +23,9 @@ For Mountainsor4 in spikeinterface
 ```
 pip install mountainsort4
 ```
+- if this step fails, it means you need to do the following
+`pip install git+https://github.com/magland/isosplit5_python.git`
+(you might have to do `pip install git` separately first, if git is not already installed)
 
 ## Usage
 To export the data from Trodes (added from Caitlin): 
