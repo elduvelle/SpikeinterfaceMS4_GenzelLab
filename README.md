@@ -33,11 +33,7 @@ navigate to the Trodes folder and then type
 `trodesexport -mountainsort -rec <full path to rec file ending in .rec> -sortingmode 1`
 
   (this will create 1 file per tetrode, which is what Mountainsort expects)
-  
-Input the directory of the file you want to spikesort
 
-Input the name of the file you want to spikesort; it needs to be to the .mda format (can be exported from trode)
+Change the `directory` and `name` variables to correspond to the data directory and the name of the tetrode .mda file to be sorted.
 
 It will use the inbuilt function of spikeinterface to run mountainsort and export to phy the result.
-
-Warning to run the script you need to use crtl+A and F9
