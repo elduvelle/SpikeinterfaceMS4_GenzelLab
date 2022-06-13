@@ -53,3 +53,5 @@ template_gui(this_params_file)
 
 or run, from a command line:
 `phy template-gui path_to_data\output\phy_MS\params.py`
+
+Credits: Adrian Aleman & Kayvan Combadiere from the Genzel lab
