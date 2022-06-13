@@ -55,26 +55,41 @@ def run_Mountainsort(recording, directory_output): ##Function that will run moun
                       progress_bar = True, total_memory = '100M')
 
 if __name__ == '__main__':
+    tetrodes_list = [2,4,7,8,22]
     #ED: the 'input' command makes Spyder crash. So we will input the files 
     # directly as variables here instead for now.
     # directory = input("Enter the data directory: ")
     # name = input("Enter the name of the file to spikesort: ")
-    dir_test = r"C:\Users\Eleonore\Documents\GitHub\SpikeinterfaceMS4_GenzelLab"
-    # dir_test = os.sep.join([dir_test])
     directory = r"\\dartfs.dartmouth.edu\rc\lab\D\DuvelleE\mvdmlab_ED_fs\Spike_sorting\Mallory_sample_data\tetrode_recording.mountainsort"
     if not os.path.isdir(directory):
         print('Directory not found!')
-    name = 'tetrode_recording.nt1.mda'
     print(directory)
-    output = os.path.join(directory, 'output')
-    # output = directory+'\output' # Note the backslash will change between linux and win
-    # ED
-    # directory = str(directory)
-    creatparam(directory) #Create the parameter and geom file
+    # name = 'tetrode_recording.nt1.mda'
+    # From Caitlin: I think 2, 4, 6, 7, 8, 22 and 30 are the best.
+    
+    # Extract all tetrodes mentioned in tetrode list
+    for tt_num in tetrodes_list:
+        this_name = 'tetrode_recording.nt' + str(tt_num) + '.mda'   
 
-    rec = se.MdaRecordingExtractor(directory,raw_fname=name,params_fname='params.json',geom_fname='geom.csv')
-    w = sw.plot_timeseries(rec) #plot the first second of the recording
-    recording_f = st.bandpass_filter(rec, freq_min=300, freq_max=6000) #Band pass filtering
-    w = sw.plot_timeseries(recording_f)
-    rec.annotate(is_filtered=True)
-    run_Mountainsort(recording_f,output) ## Run mountainsort and export to phy
+        output = os.path.join(directory, 'output_T' + str(tt_num))
+        # output = directory+'\output' # Note the backslash will change between linux and win
+        # ED
+        creatparam(directory) #Create the parameter and geom file
+        print('Running Mountainsort on file:' + this_name + '...')
+        rec = se.MdaRecordingExtractor(directory,raw_fname=this_name,params_fname='params.json',geom_fname='geom.csv')
+        w = sw.plot_timeseries(rec) #plot the first second of the recording
+        recording_f = st.bandpass_filter(rec, freq_min=300, freq_max=6000) #Band pass filtering
+        w = sw.plot_timeseries(recording_f)
+        rec.annotate(is_filtered=True)
+        run_Mountainsort(recording_f,output) ## Run mountainsort and export to phy
+        
+        run_phy = 0
+    
+        if run_phy:
+            from phy.apps.template import template_gui
+            this_data_folder = r'\\dartfs.dartmouth.edu\rc\lab\D\DuvelleE\mvdmlab_ED_fs\Spike_sorting\Mallory_sample_data\tetrode_recording.mountainsort'
+            this_tt = '6'
+            this_params_file = os.path.join(this_data_folder, 'output_T' + this_tt, 'phy_MS' 'params.py')
+            if not os.path.isfile(this_params_file):
+                print('File not found!')
+            template_gui(this_params_file)
