@@ -1,7 +1,7 @@
 # Spikeinterface
 ## Installation of Spikeinterface
 
-Create a new environment, Python need to be >=3.7
+Create a new environment, Python needs to be >=3.7
 
 ```
 conda create --name environmnent
