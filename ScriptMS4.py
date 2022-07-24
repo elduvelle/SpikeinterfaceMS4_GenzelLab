@@ -60,12 +60,10 @@ if __name__ == '__main__':
     # directly as variables here instead for now.
     # directory = input("Enter the data directory: ")
     # name = input("Enter the name of the file to spikesort: ")
-    directory = r"\\dartfs.dartmouth.edu\rc\lab\D\DuvelleE\mvdmlab_ED_fs\Spike_sorting\Mallory_sample_data\tetrode_recording.mountainsort"
+    directory = r"path\to\your\\data\\tetrode_recording.mountainsort"
     if not os.path.isdir(directory):
         print('Directory not found!')
     print(directory)
-    # name = 'tetrode_recording.nt1.mda'
-    # From Caitlin: I think 2, 4, 6, 7, 8, 22 and 30 are the best.
     
     # Extract all tetrodes mentioned in tetrode list
     for tt_num in tetrodes_list:
@@ -87,7 +85,7 @@ if __name__ == '__main__':
     
         if run_phy:
             from phy.apps.template import template_gui
-            this_data_folder = r'\\dartfs.dartmouth.edu\rc\lab\D\DuvelleE\mvdmlab_ED_fs\Spike_sorting\Mallory_sample_data\tetrode_recording.mountainsort'
+            this_data_folder = r'path\\to\\your\\data\\tetrode_recording.mountainsort'
             this_tt = '6'
             this_params_file = os.path.join(this_data_folder, 'output_T' + this_tt, 'phy_MS' 'params.py')
             if not os.path.isfile(this_params_file):
