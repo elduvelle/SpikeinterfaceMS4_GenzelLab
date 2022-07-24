@@ -1,7 +1,7 @@
 # Spikeinterface
 ## Installation of Spikeinterface
 
-Create a new environment, Python need to be >=3.7
+Create a new environment, Python needs to be >=3.7
 
 ```
 conda create --name environmnent
@@ -21,7 +21,7 @@ for phy
 Actually, this doesn't work, what we want to do instead is:
 `pip install phy --pre --upgrade` as indicated on [this page](https://github.com/cortex-lab/phy)
 
-For Mountainsor4 in spikeinterface
+For Mountainsort4 in spikeinterface
 ```
 pip install mountainsort4
 ```
