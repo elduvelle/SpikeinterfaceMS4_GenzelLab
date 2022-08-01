@@ -1,3 +1,6 @@
+## Disclaimer: code is not guaranteed to work! Use it at your own risk ##
+_Note: I am currently unsure of how the signal is referenced prior to spike detection. Will check and update._
+
 # Spikeinterface
 ## Installation of Spikeinterface
 
@@ -31,25 +34,43 @@ pip install mountainsort4
 
 ## Usage
 To export the data from Trodes (added from Caitlin): 
-navigate to the Trodes folder and then type 
+navigate to the Trodes folder and then type
+```
 `trodesexport -mountainsort -rec <full path to rec file ending in .rec> -sortingmode 1`
+```
 
 (this will create 1 '.mda' file per tetrode, which is what Mountainsort expects)
 
-Open the script 'ScriptMS4.py' and change the `directory` and `tetrodes_list` variables to correspond to the data directory and the number of the tetrodes you want to sort.
-Note, this will create 1 subfolder (output_Tx) per tetrode where X is the tetrode number.
+2 options to run the code:
+
+- Option 1. Open the script 'ScriptMS4.py', update `tetrodes_list` and optionally `path_to_file` to indicate the '.rec' raw data file. Run the code by pressing F5.
+- Option 2. Run:
+`run_MS_on_folder(tetrodes_list, path_to_file)` with appropriate contents given to those variables, note, `path_to_file` can be set to empty (`''`) and it will propt you to manually choose a folder.
+
+Note 1: you'll have to be in the right conda environment!
+
+Note 2: this will create 1 subfolder (output_Tx) per tetrode where X is the tetrode number.
 It will use the inbuilt function of spikeinterface to run mountainsort and export to phy the result.
 
-Once the main code has run: you can change the 'run_phy' variable to 1 and run that part of the code (will improve later)
-(specifically: 
+Once the main code has run: 3 options for the manual refinement with Phy:
+- Option 1. Change 'run_MS' to 0 and 'run_phy' to 1 in 'ScriptMS4.py' and re-run the script. It will launch an instance of Phy for each tetrode in `tetrodes_list` (one after the other). Don't forget to save in Phy once you're finished with the sorting!
+- Option 2. Run, from python: 
 ```
 from phy.apps.template import template_gui
-this_params_file = path_to_data\output\phy_MS\params.py
+this_params_file = path_to_data\output_TX\phy_MS\params.py (where X = the tetrode to be sorted)
 template_gui(this_params_file)
 ```
+- Option 3: Run, from a command line:
+```
+phy template-gui path_to_data\output_Tx\phy_MS\params.py 
+(change the X to be the tetrode number of your choice)
+```
 
-or run, from a command line:
-`phy template-gui path_to_data\output_Tx\phy_MS\params.py` (change the X to be the tetrode number of your choice)
-
+## Additional resources:
+- [Phy clustering guide](https://phy.readthedocs.io/en/latest/sorting_user_guide/)
+- [Next steps: extracting Phy data](https://phy.readthedocs.io/en/latest/sorting_user_guide/#analysis)
+- [Phy video tutorial](https://www.youtube.com/watch?v=czdwIr-v5Yc)
 
 _Credits: Adrian Aleman & Kayvan Combadiere from the Genzel lab_
+## Disclaimer: code is not guaranteed to work! Use it at your own risk ##
+
