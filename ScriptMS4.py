@@ -7,6 +7,8 @@ modified by ED on 2022-06-11
 """
 
 import os
+import sys 
+from pathlib import Path
 import spikeinterface as si
 import spikeinterface.extractors as se 
 import spikeinterface.toolkit as st
@@ -14,6 +16,8 @@ import spikeinterface.sorters as ss
 import spikeinterface.comparison as sc
 import spikeinterface.widgets as sw
 import tempfile
+from tkinter import filedialog
+import tkinter as tk
 
 os.environ['TEMPDIR'] = tempfile.gettempdir()
 import matplotlib.pyplot as plt
@@ -53,41 +57,102 @@ def run_Mountainsort(recording, directory_output): ##Function that will run moun
     this_output_folder = os.path.join(directory_output,'phy_MS')
     export_to_phy(we_all, output_folder = this_output_folder,
                       progress_bar = True, total_memory = '100M')
-
-if __name__ == '__main__':
-    tetrodes_list = [2,4,7,8,22]
-    #ED: the 'input' command makes Spyder crash. So we will input the files 
-    # directly as variables here instead for now.
-    # directory = input("Enter the data directory: ")
-    # name = input("Enter the name of the file to spikesort: ")
-    directory = r"path\to\your\\data\\tetrode_recording.mountainsort"
-    if not os.path.isdir(directory):
-        print('Directory not found!')
-    print(directory)
     
-    # Extract all tetrodes mentioned in tetrode list
-    for tt_num in tetrodes_list:
-        this_name = 'tetrode_recording.nt' + str(tt_num) + '.mda'   
+    
+def run_MS_on_folder(tetrodes = range(1,33), path_to_file = ''):
+    if not path_to_file or not os.path.isfile(path_to_file):
+        # wasn't given proper file as input so we will ask the user for it
+    
+        root = tk.Tk()
+    
+        print('Please select main data file (.rec) ')
+        path_to_file = filedialog.askopenfilename()
+        root.attributes("-topmost", True)
+        root.withdraw()
+        # Note ED: the 'input' command makes Spyder crash (at least the version that's
+        # compatible with Anaconda). So we can either input the files with tk or
+        # directly as variables in the code
 
-        output = os.path.join(directory, 'output_T' + str(tt_num))
-        # output = directory+'\output' # Note the backslash will change between linux and win
-        # ED
-        creatparam(directory) #Create the parameter and geom file
+    if not tetrodes:
+        tetrodes = [1] # Can give '' as tetrode input and then use this instead
+        
+    print('Will run on tetrodes:' + str(tetrodes))
+    print(path_to_file)
+    
+    path_to_file = Path(path_to_file)
+    [data_folder, data_fn] = os.path.split(path_to_file)
+    # get no-extension filename
+    [data_fn_noext, fn_ext] = os.path.splitext(data_fn)
+        
+    print('Chosen folder path: ' + data_folder)   
+    print('Chosen filename: ' + data_fn)
+    
+    ms_folder = os.path.join(data_folder, data_fn_noext +'.mountainsort')
+    print('Mountainsort path:' + ms_folder)
+
+    # Extract all tetrodes mentioned in tetrode list
+    for tt_num in tetrodes:
+        # this_name = 'r204_screening_' + ele_file_ID +'.nt' + str(tt_num) + '.mda'   
+        this_name = data_fn_noext +'.nt' + str(tt_num) + '.mda'   
+
+        output_dir = os.path.join(ms_folder, 'output_T' + str(tt_num))
+
+        creatparam(ms_folder) # Create the parameter and geom file
         print('Running Mountainsort on file:' + this_name + '...')
-        rec = se.MdaRecordingExtractor(directory,raw_fname=this_name,params_fname='params.json',geom_fname='geom.csv')
+        rec = se.MdaRecordingExtractor(ms_folder, raw_fname = this_name, 
+                                       params_fname = 'params.json',
+                                       geom_fname = 'geom.csv')
         w = sw.plot_timeseries(rec) #plot the first second of the recording
         recording_f = st.bandpass_filter(rec, freq_min=300, freq_max=6000) #Band pass filtering
+        # Note it looks like we don't need to do this with our ED data?
         w = sw.plot_timeseries(recording_f)
-        rec.annotate(is_filtered=True)
-        run_Mountainsort(recording_f,output) ## Run mountainsort and export to phy
+        rec.annotate(is_filtered = True)
+        run_Mountainsort(recording_f, output_dir) ## Run mountainsort and export to phy
         
-        run_phy = 0
+    return ms_folder
     
-        if run_phy:
-            from phy.apps.template import template_gui
-            this_data_folder = r'path\\to\\your\\data\\tetrode_recording.mountainsort'
-            this_tt = '6'
-            this_params_file = os.path.join(this_data_folder, 'output_T' + this_tt, 'phy_MS' 'params.py')
+
+if __name__ == '__main__':
+    
+
+    # Note: data needs to have been extracted in mountainsort format first!
+    # check https://github.com/elduvelle/SpikeinterfaceMS4_GenzelLab if unsure how
+
+    # Options:
+    run_MS = 1 # 1 to run Mountainsort on all existing tetrodes. This will take
+    # a while: make sure to run it only once!
+    
+    run_phy = 0 # if 1 will run phy on each tetrode one after the other
+    # Note: you might also want to start running it once it's finished with 
+    # one tetrode, in that case, run the code printed once mountainsort ends 
+    # for one tetrode 
+    
+    extract_LFP = 0 # TODO (or do we want to do this in Matlab?)
+    
+    tetrodes_list = [30, 31, 32, 1, 2, 3, 5, 6, 7, 8, 9, 10, 21, 22, 23, 24,
+                     25, 26, 11, 12, 13, 14, 15, 17, 18, 19, 27, 28, 29, 20]
+
+    tetrodes_list = [7]    
+    
+    ### 1: run mountainsort ###
+    if run_MS:
+        ms_folder = run_MS_on_folder(tetrodes = tetrodes_list)
+    else:
+        ms_folder = ''
+        
+    ### 2: run phy ###
+    if run_phy:
+        from phy.apps.template import template_gui
+        if not ms_folder or not os.path.isdir(ms_folder):
+            #  ask the user for folder imput (to mountainsort folder)
+            root = tk.Tk()  
+            print('Please select mountainsort folder (ends with .mountainsort) ')
+            ms_folder = filedialog.askdirectory()
+            root.attributes("-topmost", True)
+            root.withdraw()
+            
+        for this_tt in tetrodes_list:
+            this_params_file = os.path.join(ms_folder, 'output_T' + str(this_tt), 'phy_MS', 'params.py')
             if not os.path.isfile(this_params_file):
                 print('File not found!')
             template_gui(this_params_file)
