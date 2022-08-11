@@ -1,5 +1,4 @@
 ## Disclaimer: code is not guaranteed to work! Use it at your own risk ##
-_Note: I am currently unsure of how the signal is referenced prior to spike detection. Will check and update._
 
 # Spikeinterface
 ## Installation of Spikeinterface
