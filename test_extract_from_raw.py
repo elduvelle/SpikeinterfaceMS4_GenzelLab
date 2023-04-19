@@ -40,7 +40,8 @@ if __name__ == '__main__':
     channels = sg_rec.get_channel_ids()
     duration_s = sg_rec.get_total_duration()
     
-    ch_data = sg_rec.get_traces(channel_ids=['97'])
+    channel_num = '97';
+    ch_data = sg_rec.get_traces(channel_ids=[channel_num])
     
     ## Plotting
     plt.figure()
