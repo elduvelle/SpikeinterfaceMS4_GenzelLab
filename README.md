@@ -6,9 +6,12 @@
 Create a new environment, Python needs to be >=3.7
 
 ```
-conda create --name environmnent
+conda create --name name_of_your_environment
 ```
 Activate your environment  
+```
+conda activate name_of_your_environment
+```
 If you want to use spyder
 ```
 conda install spyder=5
@@ -27,9 +30,10 @@ For Mountainsort4 in spikeinterface
 ```
 pip install mountainsort4
 ```
-- if this step fails, it means you need to do the following
-`pip install git+https://github.com/magland/isosplit5_python.git`
-(you might have to do `pip install git` separately first, if git is not already installed)
+- if this step fails, it means you need to do the following:  
+
+`pip install git+https://github.com/magland/isosplit5_python.git`  
+(you might have to do `pip install git` separately first, if git is not already installed; OR `conda install -c anaconda git` if pip install git doesn't work)
 
 ## Usage
 To export the data from Trodes (added from Caitlin): 
