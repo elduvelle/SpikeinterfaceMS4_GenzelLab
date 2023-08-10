@@ -27,8 +27,9 @@ beyond the fixes suggested in the readme.md file, I have tried:
 ```
 conda create --name mountainsort_phy python=3.9.12
 ```
+(change mountainsort_phy to the name of the new environment you want)
 ```
-conda activate name_of_your_environment
+conda activate mountainsort_phy
 ```
 ```
 conda install spyder=5.1.5
