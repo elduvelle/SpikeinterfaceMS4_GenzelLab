@@ -45,12 +45,32 @@ pip install spikeinterface[full]==0.93
 ```
 
 ```
-pip install phy==2.0b5
+*pip install phy==2.0b5*
 ```
+This creates an error:
+> ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+python-lsp-black 1.0.0 requires black>=19.3b0, but you have black 0.0 which is incompatible.
+spyder 5.1.5 requires pyqt5<5.13, but you have pyqt5 5.15.9 which is incompatible.
+spyder 5.1.5 requires pyqtwebengine<5.13, but you have pyqtwebengine 5.15.6 which is incompatible.
+I tried this instead and it worked:
 
+```
+pip install phy --pre --upgrade
+```
+```
+pip install pybind11==2.9.2
+```
 ```
 pip install isosplit5==0.1.3
 ```
+Without prior install of pybind11, this generates the `No module named 'pybind11'` error. Adding pip install pybind=2.9.2
+After prior install of pybind11, this generates the main error, which happens with pip install mountainsort4 too and which at this stage I do not know how to fix:
+
+> C:\Users\Ele\AppData\Local\Temp\pip-install-cf4tf315\isosplit5_e7d4eff6a1d04927837a401449873461\src\isocut5.h(19): fatal error C1083: Cannot open include file: 'stdlib.h': No such file or directory
+      error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+
+
+I noticed that 'good computer' has Microsoft Visual Studio 2022 installed, but this current computer has 2019. Will attempt to install [MS visual studio 2022](https://visualstudio.microsoft.com/vs/) and restart and then reinstall isosplit.
 
 ```
 pip install mountainsort4==1.0.0
