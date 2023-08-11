@@ -372,6 +372,23 @@ cl.exe /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Users\Ele\anaconda3\envs\test_is
 error: command 'cl.exe' failed: None
 
 
+Did full reinstall of Anaconda
+Now using the version that comp1 has: 2021.11
+Did not work (still missing the stdlib thing)
+
+Going to try again with the visual studio developer command line
+Actually it has this weird error that I noticed before but maybe I should fix it:
+![image](https://github.com/elduvelle/SpikeinterfaceMS4_GenzelLab/assets/64431932/189b76da-4637-480c-97d7-cf9bbfa1058a)
+
+This page explains how to fix it so I'm trying that: https://stackoverflow.com/questions/71813161/the-system-cannot-find-the-file-specified-in-developer-command-prompt-for-vs-202
+https://code.visualstudio.com/docs/cpp/config-msvc
+doing the install of everything listed there
+
+The Developer command prompt is working now!
+![image](https://github.com/elduvelle/SpikeinterfaceMS4_GenzelLab/assets/64431932/0af5d283-a3c8-4b4e-b25c-35cfede81560)
+
+Will restart and check isosplit..
+
 ---- list of modules used by the original (working) computer ----
 
 Anaconda version: 2021.11; build channel py39_0
