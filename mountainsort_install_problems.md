@@ -77,6 +77,300 @@ pip install mountainsort4==1.0.0
 ```
 
 
+-------------
+I will attempt to focus on getting isosplit to install as it seems to be the one causing problems.
+The isosplit5 github page actually lists several related problems but they seem to have been solved...
+https://github.com/magland/isosplit5_python/issues?q=is%3Aissue+is%3Aclosed
+
+`conda create --name isosplit_test python=3.7`
+
+`conda install isosplit5`
+-> doesn't work
+
+`pip install isosplit5`
+Generates the `stdlib.h` error and the `cl.exe` error
+
+> Collecting isosplit5
+  Using cached isosplit5-0.2.2.tar.gz (22 kB)
+  Preparing metadata (setup.py) ... done
+Collecting numpy
+  Downloading numpy-1.21.6-cp37-cp37m-win_amd64.whl (14.0 MB)
+     ---------------------------------------- 14.0/14.0 MB 9.6 MB/s eta 0:00:00
+Collecting pybind11>=2.2
+  Using cached pybind11-2.11.1-py3-none-any.whl (227 kB)
+Building wheels for collected packages: isosplit5
+  Building wheel for isosplit5 (setup.py) ... error
+  error: subprocess-exited-with-error
+  × python setup.py bdist_wheel did not run successfully.
+  │ exit code: 1
+  ╰─> [18 lines of output]
+      C:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\setuptools\installer.py:30: SetuptoolsDeprecationWarning: setuptools.installer is deprecated. Requirements should be satisfied by a PEP 517 installer.
+        SetuptoolsDeprecationWarning,
+      running bdist_wheel
+      running build
+      running build_py
+      creating build
+      creating build\lib.win-amd64-cpython-37
+      creating build\lib.win-amd64-cpython-37\isosplit5
+      copying isosplit5\__init__.py -> build\lib.win-amd64-cpython-37\isosplit5
+      running build_ext
+      building 'isosplit5_interface' extension
+      creating build\temp.win-amd64-cpython-37
+      creating build\temp.win-amd64-cpython-37\Release
+      creating build\temp.win-amd64-cpython-37\Release\src
+      "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64\cl.exe" /c /nologo /O2 /W3 /GL /DNDEBUG /MD -Ic:\users\ele\appdata\local\temp\pip-install-joley5fr\isosplit5_f8fae35e525a461dbf8013820d82a511\.eggs\pybind11-2.11.1-py3.7.egg\pybind11\include -Ic:\users\ele\appdata\local\temp\pip-install-joley5fr\isosplit5_f8fae35e525a461dbf8013820d82a511\.eggs\pybind11-2.11.1-py3.7.egg\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\Include "-IC:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\include" /EHsc /Tpsrc/isocut5.cpp /Fobuild\temp.win-amd64-cpython-37\Release\src/isocut5.obj /EHsc /DVERSION_INFO=\\\"0.2.2\\\"
+      isocut5.cpp
+      C:\Users\Ele\AppData\Local\Temp\pip-install-joley5fr\isosplit5_f8fae35e525a461dbf8013820d82a511\src\isocut5.h(19): fatal error C1083: Cannot open include file: 'stdlib.h': No such file or directory
+      error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+      [end of output]
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for isosplit5
+  Running setup.py clean for isosplit5
+Failed to build isosplit5
+Installing collected packages: pybind11, numpy, isosplit5
+  Running setup.py install for isosplit5 ... error
+  error: subprocess-exited-with-error
+  × Running setup.py install for isosplit5 did not run successfully.
+  │ exit code: 1
+  ╰─> [18 lines of output]
+      running install
+      C:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\setuptools\command\install.py:37: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+        setuptools.SetuptoolsDeprecationWarning,
+      running build
+      running build_py
+      creating build
+      creating build\lib.win-amd64-cpython-37
+      creating build\lib.win-amd64-cpython-37\isosplit5
+      copying isosplit5\__init__.py -> build\lib.win-amd64-cpython-37\isosplit5
+      running build_ext
+      building 'isosplit5_interface' extension
+      creating build\temp.win-amd64-cpython-37
+      creating build\temp.win-amd64-cpython-37\Release
+      creating build\temp.win-amd64-cpython-37\Release\src
+      "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64\cl.exe" /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\Include "-IC:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\include" /EHsc /Tpsrc/isocut5.cpp /Fobuild\temp.win-amd64-cpython-37\Release\src/isocut5.obj /EHsc /DVERSION_INFO=\\\"0.2.2\\\"
+      isocut5.cpp
+      C:\Users\Ele\AppData\Local\Temp\pip-install-joley5fr\isosplit5_f8fae35e525a461dbf8013820d82a511\src\isocut5.h(19): fatal error C1083: Cannot open include file: 'stdlib.h': No such file or directory
+      error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+      [end of output]
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+error: legacy-install-failure
+× Encountered error while trying to install package.
+╰─> isosplit5
+
+did `pip cache purge` because it seems that it was using cached files
+
+tried `pip install isosplit5` again and got a similar but different error:
+
+> Collecting isosplit5
+  Downloading isosplit5-0.2.2.tar.gz (22 kB)
+  Preparing metadata (setup.py) ... done
+Requirement already satisfied: numpy in c:\users\ele\anaconda3\envs\test_isosplit\lib\site-packages (from isosplit5) (1.21.6)
+Requirement already satisfied: pybind11>=2.2 in c:\users\ele\anaconda3\envs\test_isosplit\lib\site-packages (from isosplit5) (2.11.1)
+Building wheels for collected packages: isosplit5
+  Building wheel for isosplit5 (setup.py) ... error
+  error: subprocess-exited-with-error
+  × python setup.py bdist_wheel did not run successfully.
+  │ exit code: 1
+  ╰─> [16 lines of output]
+      running bdist_wheel
+      running build
+      running build_py
+      creating build
+      creating build\lib.win-amd64-cpython-37
+      creating build\lib.win-amd64-cpython-37\isosplit5
+      copying isosplit5\__init__.py -> build\lib.win-amd64-cpython-37\isosplit5
+      running build_ext
+      building 'isosplit5_interface' extension
+      creating build\temp.win-amd64-cpython-37
+      creating build\temp.win-amd64-cpython-37\Release
+      creating build\temp.win-amd64-cpython-37\Release\src
+      "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64\cl.exe" /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\Include "-IC:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\include" /EHsc /Tpsrc/isocut5.cpp /Fobuild\temp.win-amd64-cpython-37\Release\src/isocut5.obj /EHsc /DVERSION_INFO=\\\"0.2.2\\\"
+      isocut5.cpp
+      C:\Users\Ele\AppData\Local\Temp\pip-install-e2t2_vem\isosplit5_dcfcc4a37df34c93a3ae547be29865bf\src\isocut5.h(19): fatal error C1083: Cannot open include file: 'stdlib.h': No such file or directory
+      error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+      [end of output]
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for isosplit5
+  Running setup.py clean for isosplit5
+Failed to build isosplit5
+Installing collected packages: isosplit5
+  Running setup.py install for isosplit5 ... error
+  error: subprocess-exited-with-error
+  × Running setup.py install for isosplit5 did not run successfully.
+  │ exit code: 1
+  ╰─> [18 lines of output]
+      running install
+      C:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\setuptools\command\install.py:37: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+        setuptools.SetuptoolsDeprecationWarning,
+      running build
+      running build_py
+      creating build
+      creating build\lib.win-amd64-cpython-37
+      creating build\lib.win-amd64-cpython-37\isosplit5
+      copying isosplit5\__init__.py -> build\lib.win-amd64-cpython-37\isosplit5
+      running build_ext
+      building 'isosplit5_interface' extension
+      creating build\temp.win-amd64-cpython-37
+      creating build\temp.win-amd64-cpython-37\Release
+      creating build\temp.win-amd64-cpython-37\Release\src
+      "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64\cl.exe" /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\Include "-IC:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\include" /EHsc /Tpsrc/isocut5.cpp /Fobuild\temp.win-amd64-cpython-37\Release\src/isocut5.obj /EHsc /DVERSION_INFO=\\\"0.2.2\\\"
+      isocut5.cpp
+      C:\Users\Ele\AppData\Local\Temp\pip-install-e2t2_vem\isosplit5_dcfcc4a37df34c93a3ae547be29865bf\src\isocut5.h(19): fatal error C1083: Cannot open include file: 'stdlib.h': No such file or directory
+      error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+      [end of output]
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+error: legacy-install-failure
+× Encountered error while trying to install package.
+╰─> isosplit5
+note: This is an issue with the package mentioned above, not pip.
+
+- Now trying the option suggested [here](https://github.com/magland/isosplit5_python/issues/9):
+> Worked for me after cloning the isosplit5 repo and installing with the setup.py file using the command: python setup.py install
+- clone the repo
+- from the conda environment, cd to the repo `cd C:\Users\Ele\Documents\GitHub\isosplit5_python`
+- run `python setup.py install`
+
+A same / similar error is encountered:
+> running install
+C:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\setuptools\command\install.py:37: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+  setuptools.SetuptoolsDeprecationWarning,
+C:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\setuptools\command\easy_install.py:147: EasyInstallDeprecationWarning: easy_install command is deprecated. Use build and pip and other standards-based tools.
+  EasyInstallDeprecationWarning,
+running bdist_egg
+running egg_info
+writing isosplit5.egg-info\PKG-INFO
+writing dependency_links to isosplit5.egg-info\dependency_links.txt
+writing requirements to isosplit5.egg-info\requires.txt
+writing top-level names to isosplit5.egg-info\top_level.txt
+reading manifest file 'isosplit5.egg-info\SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+writing manifest file 'isosplit5.egg-info\SOURCES.txt'
+installing library code to build\bdist.win-amd64\egg
+running install_lib
+running build_py
+creating build\lib.win-amd64-cpython-37
+creating build\lib.win-amd64-cpython-37\isosplit5
+copying isosplit5\__init__.py -> build\lib.win-amd64-cpython-37\isosplit5
+running build_ext
+building 'isosplit5_interface' extension
+creating build\temp.win-amd64-cpython-37
+creating build\temp.win-amd64-cpython-37\Release
+creating build\temp.win-amd64-cpython-37\Release\src
+"C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64\cl.exe" /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\Include "-IC:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\include" /EHsc /Tpsrc/isocut5.cpp /Fobuild\temp.win-amd64-cpython-37\Release\src/isocut5.obj /EHsc /DVERSION_INFO=\\\"0.2.2\\\"
+isocut5.cpp
+C:\Users\Ele\Documents\GitHub\isosplit5_python\src\isocut5.h(19): fatal error C1083: Cannot open include file: 'stdlib.h': No such file or directory
+error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+>
+> 
+
+- try with an Administrator console
+` conda activate test_isosplit`
+` pip install isosplit5`: same error
+install from setup: same error
+
+- try from the Microsoft visual studio tools console
+run 'Visual Studio developer command prompt for vs2022' as administrator
+error at launch:
+> the system cannot find the file specified
+
+still gives us a prompt so:
+` conda activate test_isosplit`
+same error as before I think:
+> Collecting isosplit5
+  Using cached isosplit5-0.2.2.tar.gz (22 kB)
+  Preparing metadata (setup.py) ... done
+Requirement already satisfied: numpy in c:\users\ele\anaconda3\envs\test_isosplit\lib\site-packages (from isosplit5) (1.21.6)
+Requirement already satisfied: pybind11>=2.2 in c:\users\ele\anaconda3\envs\test_isosplit\lib\site-packages (from isosplit5) (2.11.1)
+Building wheels for collected packages: isosplit5
+  Building wheel for isosplit5 (setup.py) ... error
+  error: subprocess-exited-with-error
+  × python setup.py bdist_wheel did not run successfully.
+  │ exit code: 1
+  ╰─> [14 lines of output]
+      running bdist_wheel
+      running build
+      running build_py
+      creating build
+      creating build\lib.win32-cpython-37
+      creating build\lib.win32-cpython-37\isosplit5
+      copying isosplit5\__init__.py -> build\lib.win32-cpython-37\isosplit5
+      running build_ext
+      building 'isosplit5_interface' extension
+      creating build\temp.win32-cpython-37
+      creating build\temp.win32-cpython-37\Release
+      creating build\temp.win32-cpython-37\Release\src
+      cl.exe /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\Include /EHsc /Tpsrc/isocut5.cpp /Fobuild\temp.win32-cpython-37\Release\src/isocut5.obj /EHsc /DVERSION_INFO=\\\"0.2.2\\\"
+      error: command 'cl.exe' failed: None
+      [end of output]
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for isosplit5
+  Running setup.py clean for isosplit5
+Failed to build isosplit5
+Installing collected packages: isosplit5
+  Running setup.py install for isosplit5 ... error
+  error: subprocess-exited-with-error
+  × Running setup.py install for isosplit5 did not run successfully.
+  │ exit code: 1
+  ╰─> [16 lines of output]
+      running install
+      C:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\setuptools\command\install.py:37: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+        setuptools.SetuptoolsDeprecationWarning,
+      running build
+      running build_py
+      creating build
+      creating build\lib.win32-cpython-37
+      creating build\lib.win32-cpython-37\isosplit5
+      copying isosplit5\__init__.py -> build\lib.win32-cpython-37\isosplit5
+      running build_ext
+      building 'isosplit5_interface' extension
+      creating build\temp.win32-cpython-37
+      creating build\temp.win32-cpython-37\Release
+      creating build\temp.win32-cpython-37\Release\src
+      cl.exe /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\Include /EHsc /Tpsrc/isocut5.cpp /Fobuild\temp.win32-cpython-37\Release\src/isocut5.obj /EHsc /DVERSION_INFO=\\\"0.2.2\\\"
+      error: command 'cl.exe' failed: None
+      [end of output]
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+error: legacy-install-failure
+× Encountered error while trying to install package.
+╰─> isosplit5
+note: This is an issue with the package mentioned above, not pip.
+hint: See above for output from the failure.
+
+
+clear the cache, try again, same problem
+
+try solution 2:
+- from the conda environment, cd to the repo `cd C:\Users\Ele\Documents\GitHub\isosplit5_python`
+- run `python setup.py install`
+- same error
+
+> C:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\setuptools\command\install.py:37: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+  setuptools.SetuptoolsDeprecationWarning,
+C:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\setuptools\command\easy_install.py:147: EasyInstallDeprecationWarning: easy_install command is deprecated. Use build and pip and other standards-based tools.
+  EasyInstallDeprecationWarning,
+running bdist_egg
+running egg_info
+writing isosplit5.egg-info\PKG-INFO
+writing dependency_links to isosplit5.egg-info\dependency_links.txt
+writing requirements to isosplit5.egg-info\requires.txt
+writing top-level names to isosplit5.egg-info\top_level.txt
+reading manifest file 'isosplit5.egg-info\SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+writing manifest file 'isosplit5.egg-info\SOURCES.txt'
+installing library code to build\bdist.win32\egg
+running install_lib
+running build_py
+creating build\lib.win32-cpython-37
+creating build\lib.win32-cpython-37\isosplit5
+copying isosplit5\__init__.py -> build\lib.win32-cpython-37\isosplit5
+running build_ext
+building 'isosplit5_interface' extension
+creating build\temp.win32-cpython-37
+creating build\temp.win32-cpython-37\Release
+creating build\temp.win32-cpython-37\Release\src
+cl.exe /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\include -IC:\Users\Ele\anaconda3\envs\test_isosplit\Include /EHsc /Tpsrc/isocut5.cpp /Fobuild\temp.win32-cpython-37\Release\src/isocut5.obj /EHsc /DVERSION_INFO=\\\"0.2.2\\\"
+error: command 'cl.exe' failed: None
+
 
 ---- list of modules used by the original (working) computer ----
 
