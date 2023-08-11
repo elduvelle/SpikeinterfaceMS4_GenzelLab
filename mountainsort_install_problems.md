@@ -374,6 +374,8 @@ error: command 'cl.exe' failed: None
 
 ---- list of modules used by the original (working) computer ----
 
+Anaconda version: 2021.11; build channel py39_0
+
 |Package|                       Version|
 |-----------------------------| -----------|
 alabaster                     0.7.12
