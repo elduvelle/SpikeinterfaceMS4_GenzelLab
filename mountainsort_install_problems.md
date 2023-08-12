@@ -885,7 +885,9 @@ So, next step: try visual studio tools 2017??
 
 - downloaded vsbuildtools from there: https://learn.microsoft.com/en-us/visualstudio/releasenotes/vs2017-relnotes-history
 
+![image](https://github.com/elduvelle/SpikeinterfaceMS4_GenzelLab/assets/64431932/b9c86f2c-83c2-4fdc-a946-e25e35067059)
 
+so far, same errors. But restart and we'll see...
 
 ---- list of modules used by the original (working) computer ----
 
