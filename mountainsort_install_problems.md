@@ -44,19 +44,122 @@ conda install spyder-kernels=2.1.3
 pip install spikeinterface[full]==0.93
 ```
 
-```
-*pip install phy==2.0b5*
-```
+
+~pip install phy==2.0b5~
+
 This creates an error:
 > ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
 python-lsp-black 1.0.0 requires black>=19.3b0, but you have black 0.0 which is incompatible.
 spyder 5.1.5 requires pyqt5<5.13, but you have pyqt5 5.15.9 which is incompatible.
 spyder 5.1.5 requires pyqtwebengine<5.13, but you have pyqtwebengine 5.15.6 which is incompatible.
-I tried this instead and it worked:
+
+This works instead:
 
 ```
 pip install phy --pre --upgrade
 ```
+Actually under different conditions it gives a similar error:
+
+> ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+python-lsp-black 1.2.1 requires black>=22.3.0, but you have black 0.0 which is incompatible.
+
+so I did `conda install black` which ran ok and then ran again `pip install phy --pre --upgrade` which ran without error!  
+
+~pip install git+https://github.com/magland/isosplit5_python.git~
+
+Do instead
+- clone the repo
+- from the conda environment, cd to the repo `cd C:\Users\Ele\Documents\GitHub\isosplit5_python`
+- run `python setup.py install`
+
+```
+pip install mountainsort4
+```
+
+Now fails
+ with a lot of problems in isosplit
+
+> DEPRECATION: Loading egg at c:\users\ele\appdata\roaming\python\python311\site-packages\idlex-1.22-py3.11.egg is deprecated. pip 23.3 will enforce this behaviour change. A possible replacement is to use pip for package installation..
+Collecting mountainsort4
+  Using cached mountainsort4-1.0.4-py3-none-any.whl
+Requirement already satisfied: dask in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from mountainsort4) (2023.8.0)
+Requirement already satisfied: pybind11 in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from mountainsort4) (2.11.1)
+Collecting isosplit5==0.1.3 (from mountainsort4)
+  Using cached isosplit5-0.1.3.tar.gz (17 kB)
+  Preparing metadata (setup.py) ... done
+Requirement already satisfied: numpy in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from mountainsort4) (1.25.2)
+Requirement already satisfied: h5py in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from mountainsort4) (3.9.0)
+Requirement already satisfied: scikit-learn in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from mountainsort4) (1.3.0)
+Collecting spikeextractors>=0.9.5 (from mountainsort4)
+  Using cached spikeextractors-0.9.11-py3-none-any.whl (174 kB)
+Requirement already satisfied: tqdm in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from spikeextractors>=0.9.5->mountainsort4) (4.66.1)
+Requirement already satisfied: joblib in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from spikeextractors>=0.9.5->mountainsort4) (1.3.2)
+Requirement already satisfied: click>=8.0 in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from dask->mountainsort4) (8.0.4)
+Requirement already satisfied: cloudpickle>=1.5.0 in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from dask->mountainsort4) (2.2.1)
+Requirement already satisfied: fsspec>=2021.09.0 in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from dask->mountainsort4) (2023.6.0)
+Requirement already satisfied: packaging>=20.0 in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from dask->mountainsort4) (23.0)
+Requirement already satisfied: partd>=1.2.0 in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from dask->mountainsort4) (1.4.0)
+Requirement already satisfied: pyyaml>=5.3.1 in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from dask->mountainsort4) (6.0)
+Requirement already satisfied: toolz>=0.10.0 in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from dask->mountainsort4) (0.12.0)
+Requirement already satisfied: importlib-metadata>=4.13.0 in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from dask->mountainsort4) (6.0.0)
+Requirement already satisfied: scipy>=1.5.0 in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from scikit-learn->mountainsort4) (1.11.1)
+Requirement already satisfied: threadpoolctl>=2.0.0 in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from scikit-learn->mountainsort4) (3.2.0)
+Requirement already satisfied: colorama in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from click>=8.0->dask->mountainsort4) (0.4.6)
+Requirement already satisfied: zipp>=0.5 in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from importlib-metadata>=4.13.0->dask->mountainsort4) (3.11.0)
+Requirement already satisfied: locket in c:\users\ele\anaconda3\envs\mountainsort_phy\lib\site-packages (from partd>=1.2.0->dask->mountainsort4) (1.0.0)
+Building wheels for collected packages: isosplit5
+  Building wheel for isosplit5 (setup.py) ... error
+  error: subprocess-exited-with-error  
+  × python setup.py bdist_wheel did not run successfully.
+  │ exit code: 1
+  ╰─> [34 lines of output]
+      running bdist_wheel
+      running build
+      running build_py
+      creating build
+      creating build\lib.win-amd64-cpython-311
+      creating build\lib.win-amd64-cpython-311\isosplit5
+      copying isosplit5\__init__.py -> build\lib.win-amd64-cpython-311\isosplit5
+      running build_ext
+      building 'isosplit5_interface' extension
+      creating build\temp.win-amd64-cpython-311
+      creating build\temp.win-amd64-cpython-311\Release
+      creating build\temp.win-amd64-cpython-311\Release\src
+      "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.37.32822\bin\HostX86\x64\cl.exe" /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Users\Ele\anaconda3\envs\mountainsort_phy\Lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\mountainsort_phy\Lib\site-packages\pybind11\include -IC:\Users\Ele\anaconda3\envs\mountainsort_phy\include -IC:\Users\Ele\anaconda3\envs\mountainsort_phy\Include "-IC:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.37.32822\include" "-IC:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\VS\include" "-IC:\Program Files (x86)\Windows Kits\10\include\10.0.22621.0\ucrt" "-IC:\Program Files (x86)\Windows Kits\10\\include\10.0.22621.0\\um" "-IC:\Program Files (x86)\Windows Kits\10\\include\10.0.22621.0\\shared" "-IC:\Program Files (x86)\Windows Kits\10\\include\10.0.22621.0\\winrt" "-IC:\Program Files (x86)\Windows Kits\10\\include\10.0.22621.0\\cppwinrt" /EHsc /Tpsrc/isocut5.cpp /Fobuild\temp.win-amd64-cpython-311\Release\src/isocut5.obj /EHsc /DVERSION_INFO=\\\"0.1.3\\\"
+      isocut5.cpp
+      C:\Users\Ele\AppData\Local\Temp\pip-install-giyd4ztk\isosplit5_4cb071e681294e5c8d46e0146b4905b2\src\isocut5.h(21): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+      C:\Users\Ele\AppData\Local\Temp\pip-install-giyd4ztk\isosplit5_4cb071e681294e5c8d46e0146b4905b2\src\isocut5.h(21): error C2146: syntax error: missing ';' before identifier 'bigint'
+      C:\Users\Ele\AppData\Local\Temp\pip-install-giyd4ztk\isosplit5_4cb071e681294e5c8d46e0146b4905b2\src\isocut5.h(27): error C2061: syntax error: identifier 'bigint'
+      src/isocut5.cpp(39): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+      src/isocut5.cpp(40): error C2660: 'isocut5': function does not take 5 arguments
+      C:\Users\Ele\AppData\Local\Temp\pip-install-giyd4ztk\isosplit5_4cb071e681294e5c8d46e0146b4905b2\src\isocut5.h(27): note: see declaration of 'isocut5'
+      src/isocut5.cpp(40): note: while trying to match the argument list '(double *, double *, int, float *, isocut5_opts)'
+      src/isocut5.cpp(55): warning C4244: 'initializing': conversion from 'double' to 'bigint', possible loss of data
+      src/isocut5.cpp(57): warning C4244: 'initializing': conversion from 'double' to 'bigint', possible loss of data
+      src/isocut5.cpp(62): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+      src/isocut5.cpp(64): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+      src/isocut5.cpp(65): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+      src/isocut5.cpp(81): warning C4244: '=': conversion from 'bigint' to 'float', possible loss of data
+      src/isocut5.cpp(136): warning C4244: 'initializing': conversion from 'double' to 'bigint', possible loss of data
+      src/isocut5.cpp(138): warning C4244: 'initializing': conversion from 'double' to 'bigint', possible loss of data
+      src/isocut5.cpp(143): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+      src/isocut5.cpp(145): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+      src/isocut5.cpp(146): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+      src/isocut5.cpp(162): warning C4244: '=': conversion from 'bigint' to 'float', possible loss of data
+      error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.37.32822\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+      [end of output]  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for isosplit5
+  Running setup.py clean for isosplit5
+Failed to build isosplit5
+ERROR: Could not build wheels for isosplit5, which is required to install pyproject.toml-based projects
+
+
+
+
+
+------- old stuff -----------
+
 ```
 pip install pybind11==2.9.2
 ```
@@ -761,6 +864,24 @@ tried `pip install mountainsort4` and it failed again. at least we don't have th
 >  error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.37.32822\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
 
 
+
+
+---- new attempt ----
+I uninstalled visual studio 2022 and left visual studio 2019, let's see what happens
+
+went to install isosplit, v 0.1.3 (with setup.py)
+
+The stdlib error happened again! So I need to 'repair' that install or make it more complete
+> C:\Users\Ele\Desktop\isosplit5_python-0.1.3\isosplit5_python-0.1.3\src\isocut5.h(19): fatal error C1083: Cannot open include file: 'stdlib.h': No such file or directory
+error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+
+Added a few more things to the Visual studio 2019 install, and now we do not have the stdlib.h error anymore, but we do have the many syntax errors.
+in src/isocut5.cpp
+and still the fail with 
+> error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+
+
+So, next step: try visual studio tools 2017??
 
 ---- list of modules used by the original (working) computer ----
 
