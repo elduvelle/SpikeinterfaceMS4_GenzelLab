@@ -883,6 +883,10 @@ and still the fail with
 
 So, next step: try visual studio tools 2017??
 
+- downloaded vsbuildtools from there: https://learn.microsoft.com/en-us/visualstudio/releasenotes/vs2017-relnotes-history
+
+
+
 ---- list of modules used by the original (working) computer ----
 
 Anaconda version: 2021.11; build channel py39_0
