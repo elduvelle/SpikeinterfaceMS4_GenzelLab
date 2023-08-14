@@ -1,5 +1,8 @@
 ## Disclaimer: code is not guaranteed to work! Use it at your own risk ##
 
+UPDATE: more recent installation attempts fail at the `pip install mountainsort4` phase. There might be a problem caused by Visual studio compiling (??). I have listed a few of the errors and solution attempts in [this other page](https://github.com/elduvelle/SpikeinterfaceMS4_GenzelLab/blob/main/mountainsort_install_problems.md). PLEASE let me know if you find a solution to make this work on Windows (10 or 11).
+The instructions should work on Linux...
+
 # Spikeinterface
 ## Installation of Spikeinterface
 
@@ -20,23 +23,33 @@ for spikeinterface installation
 ```
 pip install spikeinterface[full]==0.93
 ```
-for phy
-~`pip install phy==2.0b1`~
-
-Actually, this doesn't work, what we want to do instead is:
-`pip install phy --pre --upgrade` as indicated on [this page](https://github.com/cortex-lab/phy)
-
+for phy (as indicated on [this page](https://github.com/cortex-lab/phy)
+```
+pip install phy --pre --upgrade 
+```
 For Mountainsort4 in spikeinterface
 ```
 pip install mountainsort4
 ```
-- if this step fails, it means you need to do the following:  
 
-`pip install git+https://github.com/magland/isosplit5_python.git`  
+if this step fails, it means you need to do the following and then run `pip install mountainsort4` again:  
+
+  Option 1:
+```
+pip install git+https://github.com/magland/isosplit5_python.git`
+```
 (you might have to do `pip install git` separately first, if git is not already installed; OR `conda install -c anaconda git` if pip install git doesn't work)
 
+  Option 2: 
+Clone the [isosplit5 repo](https://github.com/magland/isosplit5_python), cd to it, install it with the setup.py file using the command (note, it might throw some deprecation warnings; see [this issue](https://github.com/magland/isosplit5_python/issues/9)): 
+```
+python setup.py install
+```
+
+All necessary modules should now be installed!
+
 ## Usage
-To export the data from Trodes (added from Caitlin): 
+To export the data from Trodes: 
 navigate to the Trodes folder and then type
 ```
 `trodesexport -mountainsort -rec <full path to rec file ending in .rec> -sortingmode 1`
