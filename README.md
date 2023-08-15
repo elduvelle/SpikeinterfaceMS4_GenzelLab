@@ -1,7 +1,8 @@
 ## Disclaimer: code is not guaranteed to work! Use it at your own risk ##
 
 UPDATE: more recent installation attempts fail at the `pip install mountainsort4` phase. There might be a problem caused by Visual studio compiling (??). I have listed a few of the errors and solution attempts in [this other page](https://github.com/elduvelle/SpikeinterfaceMS4_GenzelLab/blob/main/mountainsort_install_problems.md). PLEASE let me know if you find a solution to make this work on Windows (10 or 11).
-The instructions should work on Linux...
+
+Note: these instructions **work** on Linux (Ubuntu 18.04).
 
 # Spikeinterface
 ## Installation of Spikeinterface
@@ -55,6 +56,11 @@ navigate to the Trodes folder and then type
 `trodesexport -mountainsort -rec <full path to rec file ending in .rec> -sortingmode 1`
 ```
 
+Note, if using Linux, do instead:
+```
+`.\trodesexport -mountainsort -rec <full path to rec file ending in .rec> -sortingmode 1`
+```
+
 (this will create 1 '.mda' file per tetrode, which is what Mountainsort expects)
 
 2 options to run the code:
@@ -80,6 +86,13 @@ template_gui(this_params_file)
 ```
 phy template-gui path_to_data\output_Tx\phy_MS\params.py 
 (change the X to be the tetrode number of your choice)
+```
+
+Note for linux: I had an error related to `numpy` ('np.bool is deprecated'). I fixed it by downgrading numpy in that environment:
+
+```
+python -m pip uninstall numpy
+python -m pip install numpy==1.23.1
 ```
 
 ## Additional resources:
