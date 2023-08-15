@@ -899,6 +899,15 @@ error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft 
 Installing VS Professional 2015  (from a link found online; for some reason the official website wanted me to log in and buy a subscription)  
 also wondering if we should try to install mountainsort the 'setup.py' way as well?
 
+Doesn't work, same error
+Probably logical because visual studio isn't hte same as visual studio coding tools
+uninstalled all visual-studio related programs
+
+Going ton install this:
+Visual C++ redistributable for visual studio with update 3 (see downloads)
+![image](https://github.com/elduvelle/SpikeinterfaceMS4_GenzelLab/assets/64431932/a59e68bb-2be7-47b1-8faf-470e90822dfd)
+
+
 ---- list of modules used by the original (working) computer ----
 
 Anaconda version: 2021.11; build channel py39_0
