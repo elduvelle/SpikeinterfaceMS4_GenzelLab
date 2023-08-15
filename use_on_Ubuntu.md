@@ -7,8 +7,7 @@ launching phy doesn't work: this error pops up:
 > AttributeError: module 'numpy' has no attribute 'bool'.
 `np.bool` was a deprecated alias for the builtin `bool`. To avoid this error in existing code, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
 
-Will do a branch where I modify this...
-Did this (see [this page](https://stackoverflow.com/questions/74893742/how-to-solve-attributeerror-module-numpy-has-no-attribute-bool)):
+Did this on the local Ubuntu computer (see [this page](https://stackoverflow.com/questions/74893742/how-to-solve-attributeerror-module-numpy-has-no-attribute-bool)):
 
 ```
 python -m pip uninstall numpy
