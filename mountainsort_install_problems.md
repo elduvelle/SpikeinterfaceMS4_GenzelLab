@@ -889,6 +889,16 @@ So, next step: try visual studio tools 2017??
 
 so far, same errors. But restart and we'll see...
 
+it still didn't seem to work with VS 2017.
+
+Uninstalled all VS programs and tried to run the install of isosplit5: it crashed with this error:
+
+> building 'isosplit5_interface' extension
+error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
+
+Installing VS Professional 2015  (from a link found online; for some reason the official website wanted me to log in and buy a subscription)  
+also wondering if we should try to install mountainsort the 'setup.py' way as well?
+
 ---- list of modules used by the original (working) computer ----
 
 Anaconda version: 2021.11; build channel py39_0
