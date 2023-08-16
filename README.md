@@ -1,3 +1,5 @@
+# How-to: spike-sort Trodes data with Mountainsort4 and Phy
+
 ## Disclaimer: code is not guaranteed to work! Use it at your own risk ##
 
 UPDATE: more recent installation attempts fail at the `pip install mountainsort4` phase. There might be a problem caused by Visual studio compiling (??). I have listed a few of the errors and solution attempts in [this other page](https://github.com/elduvelle/SpikeinterfaceMS4_GenzelLab/blob/main/mountainsort_install_problems.md). PLEASE let me know if you find a solution to make this work on Windows (10 or 11).
