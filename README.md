@@ -3,9 +3,10 @@
 UPDATE: more recent installation attempts fail at the `pip install mountainsort4` phase. There might be a problem caused by Visual studio compiling (??). I have listed a few of the errors and solution attempts in [this other page](https://github.com/elduvelle/SpikeinterfaceMS4_GenzelLab/blob/main/mountainsort_install_problems.md). PLEASE let me know if you find a solution to make this work on Windows (10 or 11).
 
 Note: these instructions **work** on Linux (Ubuntu 18.04).
+Note: these instructions also work on Windows Subsystem for Linux (WSL). See further down for instructions on how to install that.
 
-# Spikeinterface
-## Installation of Spikeinterface
+# Installation
+### Installation of Spikeinterface, Mountainsort and Phy on Windows 10
 
 Create a new environment, Python needs to be >=3.7
 
@@ -16,9 +17,12 @@ Activate your environment
 ```
 conda activate name_of_your_environment
 ```
-If you want to use spyder
+install your IDE (I use idlex)
 ```
-conda install spyder=5
+pip install idle
+```
+```
+pip install idlex
 ```
 for spikeinterface installation
 ```
@@ -49,7 +53,37 @@ python setup.py install
 
 All necessary modules should now be installed!
 
-## Usage
+### Installation of Spikeinterface, Mountainsort and Phy on Windows 10 using Windows Subsystem for Linux (WSL)
+If the instructions above didn't work... all hope is not lost! You can try to install the pipeline using the WSL which mimics a Linux environment without having to actually install Linux. How-to:
+
+1. Install WSL following the instructions [here](https://learn.microsoft.com/en-us/windows/wsl/install) - in more details, in a console run as administrator run:
+
+```
+wsl --install
+```
+2. Create the account & password
+3. Install miniconda as explained [here](https://saturncloud.io/blog/using-conda-from-wsl-windows-10-a-guide-for-data-scientists/):
+
+3.1. Make sure you move to a folder that you have writing access to, like /home/your_user_name/ by doing `cd path_to_that_folder`  
+
+3.2 Download the miniconda installer
+```
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+```
+3.3. Run the installation, follow the instructions
+```
+bash Miniconda3-latest-Linux-x86_64.sh
+```
+3.3. Close and reopen
+
+4. Install 'C++ tools':
+```
+sudo apt install build-essential
+```
+
+And then you should be able to go back at the top of this readme and follow the general installation instructions.
+
+# Usage
 To export the data from Trodes: 
 navigate to the Trodes folder and then type
 ```
@@ -95,7 +129,7 @@ python -m pip uninstall numpy
 python -m pip install numpy==1.23.1
 ```
 
-## Additional resources:
+# Additional resources:
 - [Phy clustering guide](https://phy.readthedocs.io/en/latest/sorting_user_guide/)
 - [Next steps: extracting Phy data](https://phy.readthedocs.io/en/latest/sorting_user_guide/#analysis)
 - [Phy video tutorial](https://www.youtube.com/watch?v=czdwIr-v5Yc)
