@@ -101,7 +101,7 @@ Note, if using Linux, do instead:
 
 2 options to run the code:
 
-- Option 1. Open the script 'ScriptMS4.py', update `tetrodes_list` and optionally `path_to_file` to indicate the '.rec' raw data file. Run the code by pressing F5.
+- Option 1. Open your editor (e.g. `python -m idlexlib.launch`), open the script 'ScriptMS4.py', update `tetrodes_list` and optionally `path_to_file` to indicate the '.rec' raw data file. Run the code by pressing F5.
 - Option 2. Run:
 `run_MS_on_folder(tetrodes_list, path_to_file)` with appropriate contents given to those variables, note, `path_to_file` can be set to empty (`''`) and it will propt you to manually choose a folder.
 
