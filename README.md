@@ -94,7 +94,7 @@ navigate to the Trodes folder and then type
 
 Note, if using Linux, do instead:
 ```
-`.\trodesexport -mountainsort -rec <full path to rec file ending in .rec> -sortingmode 1`
+`./trodesexport -mountainsort -rec <full path to rec file ending in .rec> -sortingmode 1`
 ```
 
 (this will create 1 '.mda' file per tetrode, which is what Mountainsort expects)
