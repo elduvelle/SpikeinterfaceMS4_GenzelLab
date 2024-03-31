@@ -30,19 +30,35 @@ import json
 
 
 
-def creatparam(direc): ##Function that will create the parameters and geometry file needed for mountainsort
+def creatparam(mda_extract_params, direc): ##Function that will create the parameters and geometry file needed for mountainsort
+    '''
+    example of sort params:
+    sort_params = {"samplerate": 30000, "spike_sign": -12}
+    '''
 
-
-    parameter = {"samplerate": 30000, "spike_sign": -1}
-    geom = np.array([[1, 0],[2, 0],[3, 0],[4, 0]])
+    #mda_extract_params = {"samplerate": 30000, "spike_sign": -1}
+    #geom = np.array([[1, 0],[2, 0],[3, 0],[4, 0]])
+    # Trying something new
+    geom = np.array([[0, 0],[-25, 25],[25, 25],[0, 50]])
     #ED mod file name handling
     np.savetxt(os.path.join(direc,'geom.csv'), geom, delimiter=',')
     # ED mod file name handling
     this_file_path = os.path.join(direc,'params.json')
     with open(this_file_path, 'w') as mon_fichier:
-        json.dump(parameter, mon_fichier)           
+        json.dump(mda_extract_params, mon_fichier)           
         print('Saved param file to:',this_file_path )
 
+def save_ms_params(ms_sorting_params, folder):
+    '''
+    save the parameters used to run mountainsort
+    sort_params = {'num_workers': 12, 'detect_threshold': 3, 'filter': False}
+    '''
+
+    this_file_path = os.path.join(folder,'ms_params.json')
+    with open(this_file_path, 'w') as my_file:
+        json.dump(ms_sorting_params, my_file)           
+        print('Saved ms param file to:', this_file_path )
+        
 def save_ses_lims(tosave_info, folder):
     '''
     Saves info about the start and end times and the sample number in each
@@ -60,30 +76,35 @@ def save_ses_lims(tosave_info, folder):
 
         print('Saved concatenated session info to:',this_file_path )
 
-def run_Mountainsort(recording, directory_output): 
+def run_Mountainsort(recording, directory_output, ms_sort_params = {}): 
     ##Function that will run mountainsort, extract the information from mountainsort and export to phy
     ss.installed_sorters()
-    default_MS = ss.Mountainsort4Sorter.default_params()
-    print(default_MS)
+    ms_params = ss.Mountainsort4Sorter.default_params()
+    for param, value in ms_sort_params.items():
+        ms_params[param] = value
+    print(ms_params) # we will try to send this to MS
+    # Figure out how to use our parameters
     this_output_folder = os.path.join(directory_output, 'results_MS')
     
     sorting_MS = ss.run_mountainsort4(recording,
                                       output_folder = this_output_folder,
-                                      verbose = True, **default_MS,)
+                                      verbose = True, **ms_params,)
         
-    #ED added use of os.path.join
     this_output_folder = os.path.join(directory_output,'wf_MS')
     we_all = si.extract_waveforms(recording, sorting_MS, folder = this_output_folder, 
                                       max_spikes_per_unit = None, progress_bar = True)
-    #ED added use of os.path.join
     # What is this total_memory parameter?
     this_output_folder = os.path.join(directory_output,'phy_MS')
     export_to_phy(we_all, output_folder = this_output_folder,
                       progress_bar = True, total_memory = '500M')
     
     
-def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0):
-    do_filter = 1 # 1: filter in the spike-band
+def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0,
+                     mda_params = {"samplerate": 30000, "spike_sign": -1},
+                     ms_sort_params = {}):
+    
+    do_filter_before_ms = 1 # 1: filter in the spike-band before sending the recording to mountainsort
+    # note, mountainsort also has the possibility to whiten and filter
     
     if not path_to_file or not os.path.isfile(path_to_file):
         # wasn't given proper file as input so we will ask the user for it
@@ -187,7 +208,12 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
             recordings_dur = []
             for [rec_i, rec_n] in enumerate(all_fns):
                 # Create the parameters, seems that they have to be saved in the same folder where mda data is
-                creatparam(all_ms_fold[rec_i])
+
+                creatparam(mda_params, all_ms_fold[rec_i])
+
+                # Also create the parameters used by mountainsort
+                save_ms_params( ms_sort_params, all_ms_fold[rec_i])
+                
                 # try to create the object and see if we can get sample number
                 mda_name = rec_n +'.nt' + str(tt_num) + '.mda'
 
@@ -218,6 +244,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
             tosave_recordings_dur = {'recordings_dur' : recordings_dur}
             tosave_info = [tosave_ts_lims, tosave_sample_nums, tosave_all_fns, tosave_recordings_dur]
             save_ses_lims(tosave_info, concat_fold)
+
                 
             # create a multirecording time extractor which concatenates the traces in time
             # The function MdaRecordingExtractor doesn't work in our spike interface version (0.93.0)
@@ -228,10 +255,11 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
             multirecording = si.concatenate_recordings(recordings_list)
 
             # Do filtering
-            if do_filter:
+            w = sw.plot_timeseries(multirecording) #plot the first second of the recording
+            if do_filter_before_ms:
                 print('Filtering in spike band')
                 multirecording = st.bandpass_filter(multirecording, freq_min=300, freq_max=6000) #Band pass filtering
-                # Note it looks like we don't need to do this with our ED data?
+                # if we don't do this, ms gives an error, even though it also has filtering in its parameters
                 w = sw.plot_timeseries(multirecording)
                 multirecording.annotate(is_filtered = True)
             else:
@@ -243,21 +271,20 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
             print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
             print('Running Mountainsort on concatenated files...')
             print(*all_fns)
-            run_Mountainsort(multirecording, output_dir) ## Run mountainsort and export to phy
+            ## Run mountainsort and export to phy
+            run_Mountainsort(multirecording, output_dir, ms_sort_params)
+            
             print('********************************')
             print('Finished tetrode:' + str(tt_num))
             print('********************************')
-
-            
-            breakpoint()
-            
+                        
         else:
             
             mda_name = data_fn_noext +'.nt' + str(tt_num) + '.mda'   
 
             output_dir = os.path.join(ms_folder, 'output_T' + str(tt_num))
 
-            creatparam(ms_folder) # Create the parameter and geom file, I think this can
+            creatparam(sort_params, ms_folder) # Create the parameter and geom file, I think this can
             # be done only once           
 
             rec = se.MdaRecordingExtractor(ms_folder, raw_fname = mda_name, 
@@ -333,7 +360,12 @@ if __name__ == '__main__':
     tetrodes_list = [25, 26, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29,
                      21, 10, 9, 8, 7, 6, 5, 4, 3 ,2 , 1, 32, 31, 30]
 
-    tetrodes_list = [26]
+    tetrodes_list = [12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29,
+                     21, 10, 9, 8, 7, 6, 5, 4, 3 ,2 , 1, 32, 31, 30]
+
+    mda_params = {"samplerate": 30000, "spike_sign": -1}
+    ms_sort_params = {"num_workers": 8, 'detect_threshold':3}
+   
     
     path_to_file = '' # Change this to an actual path to the raw data file, 
     # otherwise, the code will prompt you to choose it using the explorer
@@ -366,7 +398,7 @@ if __name__ == '__main__':
     
     ### 1: run mountainsort ###
     if run_MS:
-        ms_folder = run_MS_on_folder(tetrodes_list, path_to_file, multisession)
+        ms_folder = run_MS_on_folder(tetrodes_list, path_to_file, multisession, mda_params, ms_sort_params)
     else:
         # ms_folder = r'\\dartfs.dartmouth.edu\rc\lab\D\DuvelleE\ED_Postdoc_2021_data\r206\screening\2023-02-15_r206_sq3\2023-02-15_r206_sq3.mountainsort'
         # ms_folder = Path(ms_folder)
