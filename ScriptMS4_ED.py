@@ -73,6 +73,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = ''):
         # directly as variables in the code
         # TODO would probably be better to input the actual mountainsort file
         if multisession:
+            ms_suf = '.mountainsort'
             # TODO turn this into a session
             print('Please select the parent folder to the session to concatenate and sort')
             path_to_folders = select_folder()
@@ -87,7 +88,9 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = ''):
             all_ms_fold = []
             for folder in all_f:
                 in_folders = next(os.walk(folder))[1]
-                ms_folder = [folder for folder in in_folders if '.mountainsort' in folder]
+                # add the full path
+                ms_folder = [os.path.join(folder, in_folder) for in_folder in in_folders if
+                             ms_suf in in_folder]
                 all_ms_fold += ms_folder
 
             # Organize alphabetically
@@ -98,16 +101,25 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = ''):
                 print (str(ind) + ': ' + folder)
 
             # get each session name in order    
-            all_fns = [os.path.splitext(folder)[0] for folder in all_ms_fold]
+            all_fns = [os.path.split(folder)[1][0:-len(ms_suf)] for folder in all_ms_fold]
+            all_fns_paths = [os.path.split(folder)[0] for folder in all_ms_fold]
 
             concat_fname = all_fns[0] + '_concat_' + str(num_to_merge)
             # from the first session name create the concatenated folder name
-            concat_fold = os.path.join(os.path.splitext(all_ms_fold[0])[2], concat_fname)
-CONTINUE HERE
+            # IN the parent folder
+            concat_fold = os.path.join(path_to_folders, concat_fname)
+
+            # Check if exist first
+            if os.path.isdir(concat_fold):
+                print('Warning! Folder for concatenated files already exists at: ')
+                print(concat_fold)
+            else:
+                print('creating folder for merged sessions at :')
+                print(concat_fold)
+                os.mkdir(concat_fold)
+            # Find and store start and end times of each session for sp and lfp and pos
             breakpoint()
-                        mkdir()
-
-
+            
         else:
             print('Please select main data file (.rec) to be sorted')
             path_to_file = select_file()
