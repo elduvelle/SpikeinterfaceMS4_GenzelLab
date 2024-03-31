@@ -19,17 +19,19 @@ import tempfile
 from tkinter import filedialog
 import tkinter as tk
 
+import readTrodesExtractedDataFile3 as trodesReader
+
 os.environ['TEMPDIR'] = tempfile.gettempdir()
 import matplotlib.pyplot as plt
 import numpy as np
  
 from spikeinterface.exporters import export_to_phy
-
+import json
 
 
 
 def creatparam(direc): ##Function that will create the parameters and geometry file needed for mountainsort
-    import json
+
 
     parameter = {"samplerate": 30000, "spike_sign": -1}
     geom = np.array([[1, 0],[2, 0],[3, 0],[4, 0]])
@@ -38,9 +40,25 @@ def creatparam(direc): ##Function that will create the parameters and geometry f
     # ED mod file name handling
     this_file_path = os.path.join(direc,'params.json')
     with open(this_file_path, 'w') as mon_fichier:
-    	json.dump(parameter, mon_fichier)
-        
-    print('Should have saved param file to:',this_file_path )
+        json.dump(parameter, mon_fichier)           
+        print('Saved param file to:',this_file_path )
+
+def save_ses_lims(tosave_info, folder):
+    '''
+    Saves info about the start and end times and the sample number in each
+    session of a concatenated recording
+    ts_lims: dictionary with limits for each session
+    sample_limes: same, for sample number
+    ses_names: same, for session names
+    '''
+    this_fn = 'concat_limits.json'
+    this_file_path = os.path.join(folder, this_fn)
+    with open(this_file_path, 'w') as this_file:
+        for info in tosave_info:
+            json.dump(info, this_file)
+            this_file.write('\n')
+
+        print('Saved concatenated session info to:',this_file_path )
 
 def run_Mountainsort(recording, directory_output): 
     ##Function that will run mountainsort, extract the information from mountainsort and export to phy
@@ -48,6 +66,7 @@ def run_Mountainsort(recording, directory_output):
     default_MS = ss.Mountainsort4Sorter.default_params()
     print(default_MS)
     this_output_folder = os.path.join(directory_output, 'results_MS')
+    
     sorting_MS = ss.run_mountainsort4(recording,
                                       output_folder = this_output_folder,
                                       verbose = True, **default_MS,)
@@ -57,12 +76,13 @@ def run_Mountainsort(recording, directory_output):
     we_all = si.extract_waveforms(recording, sorting_MS, folder = this_output_folder, 
                                       max_spikes_per_unit = None, progress_bar = True)
     #ED added use of os.path.join
+    # What is this total_memory parameter?
     this_output_folder = os.path.join(directory_output,'phy_MS')
     export_to_phy(we_all, output_folder = this_output_folder,
-                      progress_bar = True, total_memory = '100M')
+                      progress_bar = True, total_memory = '500M')
     
     
-def run_MS_on_folder(tetrodes = range(1,33), path_to_file = ''):
+def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0):
     do_filter = 1 # 1: filter in the spike-band
     
     if not path_to_file or not os.path.isfile(path_to_file):
@@ -74,7 +94,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = ''):
         # TODO would probably be better to input the actual mountainsort file
         if multisession:
             ms_suf = '.mountainsort'
-            # TODO turn this into a session
+            timestamps_suf = '.timestamps.mda'
             print('Please select the parent folder to the session to concatenate and sort')
             path_to_folders = select_folder()
             # convert to os-independent path
@@ -104,6 +124,21 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = ''):
             all_fns = [os.path.split(folder)[1][0:-len(ms_suf)] for folder in all_ms_fold]
             all_fns_paths = [os.path.split(folder)[0] for folder in all_ms_fold]
 
+            # Get the timestamp info for each file  
+            all_timestamps_fns = [fn + timestamps_suf for fn in all_fns]
+
+            #### TODO READ THIS FILE SOMEHOW
+            #note, it's probably OK that they start at 0 for sorting, we just want to add them
+            # to the individual recordings after so that they are synchronized with the lfp and pos and events
+            # or, we could remove them from those other files so that everyone starts at 0 for each session
+
+            if 0:               
+                all_fns_ts = []
+                for [fni, fn] in enumerate(all_timestamps_fns):
+                    breakpoint()
+                    these_ts = trodesReader.readTrodesExtractedDataFile(os.path.join(all_ms_fold[fni], fn))
+                    print(these_ts['data'])
+
             concat_fname = all_fns[0] + '_concat_' + str(num_to_merge)
             # from the first session name create the concatenated folder name
             # IN the parent folder
@@ -117,8 +152,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = ''):
                 print('creating folder for merged sessions at :')
                 print(concat_fold)
                 os.mkdir(concat_fold)
-            # Find and store start and end times of each session for sp and lfp and pos
-            breakpoint()
+
             
         else:
             print('Please select main data file (.rec) to be sorted')
@@ -136,38 +170,115 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = ''):
             ms_folder = os.path.join(data_folder, data_fn_noext +'.mountainsort')
             print('Mountainsort path:' + ms_folder)
 
+
     if not tetrodes:
         tetrodes = [1] # Can give '' as tetrode input and then use this instead
         
     print('Will run on tetrodes:' + str(tetrodes))
-
-
-    # Extract all tetrodes mentioned in tetrode list
+   
+    # Extract & sort all tetrodes mentioned in tetrode list
     for tt_num in tetrodes:
-        # this_name = 'r204_screening_' + ele_file_ID +'.nt' + str(tt_num) + '.mda'   
-        this_name = data_fn_noext +'.nt' + str(tt_num) + '.mda'   
+        if multisession:
+            # load each recording in 'rec' format with mda recording extractor??
+            output_dir = os.path.join(concat_fold, 'output_T' + str(tt_num))
+            recordings_list = []
+            sample_nums = []
+            ts_lims = []
+            recordings_dur = []
+            for [rec_i, rec_n] in enumerate(all_fns):
+                # Create the parameters, seems that they have to be saved in the same folder where mda data is
+                creatparam(all_ms_fold[rec_i])
+                # try to create the object and see if we can get sample number
+                mda_name = rec_n +'.nt' + str(tt_num) + '.mda'
 
-        output_dir = os.path.join(ms_folder, 'output_T' + str(tt_num))
+                # NOTE IMPORTANT the times here are by default starting at 0 with spikeinterface
+                # We can get them to start at the actual time by computing the new times (add
+                # the start time to the curren time) and then use rec.set_times(new_time)
+                # default_times = rec.get_times()
+                # new_times = default_times + 5
+                # rec.set_times(new_times)
 
-        creatparam(ms_folder) # Create the parameter and geom file
-        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        print('Running Mountainsort on file:' + this_name + '...')
-        rec = se.MdaRecordingExtractor(ms_folder, raw_fname = this_name, 
-                                       params_fname = 'params.json',
-                                       geom_fname = 'geom.csv')
-        w = sw.plot_timeseries(rec) #plot the first second of the recording
-        if do_filter:
-            recording_f = st.bandpass_filter(rec, freq_min=300, freq_max=6000) #Band pass filtering
-            # Note it looks like we don't need to do this with our ED data?
-            w = sw.plot_timeseries(recording_f)
-            rec.annotate(is_filtered = True)
+                # looks like we can find the start time using timestamps.mda file extracted by Trodes!
+
+                # question: how to find the start time??
+                this_rec = se.MdaRecordingExtractor(all_ms_fold[rec_i], raw_fname = mda_name, 
+                               params_fname = 'params.json',
+                               geom_fname = 'geom.csv')
+                recordings_list.append(this_rec)
+                sample_nums.append(this_rec.get_num_samples())
+                # TODO fill this with start and end times for each session once we got them
+                ts_lims.append([])
+                this_dur = this_rec.get_num_samples() / this_rec.get_sampling_frequency()
+                recordings_dur.append(this_dur)
+                
+            #Save the sample num list and equivalent in times to file so that we can recover the original session limits
+            tosave_ts_lims = {'ts_lims': ts_lims}
+            tosave_sample_nums = {'sample_nums': sample_nums}
+            tosave_all_fns = {'all_fns': all_fns}
+            tosave_recordings_dur = {'recordings_dur' : recordings_dur}
+            tosave_info = [tosave_ts_lims, tosave_sample_nums, tosave_all_fns, tosave_recordings_dur]
+            save_ses_lims(tosave_info, concat_fold)
+                
+            # create a multirecording time extractor which concatenates the traces in time
+            # The function MdaRecordingExtractor doesn't work in our spike interface version (0.93.0)
+            # so we will try a different approach
+            #multirecording = se.MultiRecordingTimeExtractor(recordings = recordings_list)
+
+            # Use this concatenate_recordings function instead, but try to upgrade when we can
+            multirecording = si.concatenate_recordings(recordings_list)
+
+            # Do filtering
+            if do_filter:
+                print('Filtering in spike band')
+                multirecording = st.bandpass_filter(multirecording, freq_min=300, freq_max=6000) #Band pass filtering
+                # Note it looks like we don't need to do this with our ED data?
+                w = sw.plot_timeseries(multirecording)
+                multirecording.annotate(is_filtered = True)
+            else:
+                print('Not filtering the recording')
+
+            # run mountainsort, give it the concat_fold as output dir
+
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+            print('Running Mountainsort on concatenated files...')
+            print(*all_fns)
+            run_Mountainsort(multirecording, output_dir) ## Run mountainsort and export to phy
+            print('********************************')
+            print('Finished tetrode:' + str(tt_num))
+            print('********************************')
+
+            
+            breakpoint()
+            
         else:
-            recording_f = rec
-        run_Mountainsort(recording_f, output_dir) ## Run mountainsort and export to phy
-        print('********************************')
-        print('Finished tetrode:' + str(tt_num))
-        print('********************************')
+            
+            mda_name = data_fn_noext +'.nt' + str(tt_num) + '.mda'   
+
+            output_dir = os.path.join(ms_folder, 'output_T' + str(tt_num))
+
+            creatparam(ms_folder) # Create the parameter and geom file, I think this can
+            # be done only once           
+
+            rec = se.MdaRecordingExtractor(ms_folder, raw_fname = mda_name, 
+                                           params_fname = 'params.json',
+                                           geom_fname = 'geom.csv')
+            w = sw.plot_timeseries(rec) #plot the first second of the recording
+            if do_filter:
+                recording_f = st.bandpass_filter(rec, freq_min=300, freq_max=6000) #Band pass filtering
+                # Note it looks like we don't need to do this with our ED data?
+                w = sw.plot_timeseries(recording_f)
+                rec.annotate(is_filtered = True)
+            else:
+                recording_f = rec
+                
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+            print('Running Mountainsort on file:' + mda_name + '...')
+            run_Mountainsort(recording_f, output_dir) ## Run mountainsort and export to phy
+            print('********************************')
+            print('Finished tetrode:' + str(tt_num))
+            print('********************************')
 
     return ms_folder
 
@@ -222,45 +333,7 @@ if __name__ == '__main__':
     tetrodes_list = [25, 26, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29,
                      21, 10, 9, 8, 7, 6, 5, 4, 3 ,2 , 1, 32, 31, 30]
 
-    # RAt 6
-#    tetrodes_list = [19, 3]
-    
-    # tetrodes_list = [1]
-    #tetrodes_list = [20, 31, 2, 3, 4, 6, 10, 21, 22, 23]
-    
-    #17 didn't work for sq13
-
-    # tetrodes_list = [12, 30, 3, 4];
-    # tetrodes_list = [24, 25, 26, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29]
-    
-    # tetrodes_list = [9]
-
-    # tetrodes_list =  [11, 12, 14, 20,27, 28, 22,21, 4, 3, 2]
-    # tetrodes_list = [5]
-    
-    # # MAIN tetrode list
- 
-    #tetrodes_list = [12,14,15, 27,28,2,3,4,5,7, 21,23]
-    
-    #tetrodes_list = [13, 28,2,3,4,5,23]
-    #tetrodes_list = [22, 27]
-    #tetrodes_list = [29, 12, 13, 14, 15]
-    
-# Error for tetrodes 11 and 14: 
-#     assert geom.shape[0] == self._diskreadmda.N1(), f'Incompatible dimensions between geom.csv and timeseries ' \
-
-# AssertionError: Incompatible dimensions between geom.csv and timeseries file: 4 <> 3
-# #could it be because we removed some bad channels?
-
-# another error :
-    # ResourceWarning: unclosed file <_io.TextIOWrapper name=5 encoding='cp1252'>
-    # later:
-  #   File C:\ProgramData\Anaconda3\envs\MoutainSort_Phy_test\lib\site-packages\sklearn\decomposition\_incremental_pca.py:283 in partial_fit
-  #     raise ValueError(
-
-  # ValueError: n_components=5 must be less or equal to the batch number of samples 4.
-# Warning! The recording is already filtered, but mountainsort4 filter is enabled
-
+    tetrodes_list = [26]
     
     path_to_file = '' # Change this to an actual path to the raw data file, 
     # otherwise, the code will prompt you to choose it using the explorer
@@ -293,7 +366,7 @@ if __name__ == '__main__':
     
     ### 1: run mountainsort ###
     if run_MS:
-        ms_folder = run_MS_on_folder(tetrodes_list, path_to_file)
+        ms_folder = run_MS_on_folder(tetrodes_list, path_to_file, multisession)
     else:
         # ms_folder = r'\\dartfs.dartmouth.edu\rc\lab\D\DuvelleE\ED_Postdoc_2021_data\r206\screening\2023-02-15_r206_sq3\2023-02-15_r206_sq3.mountainsort'
         # ms_folder = Path(ms_folder)
