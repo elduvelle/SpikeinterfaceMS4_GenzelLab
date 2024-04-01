@@ -70,11 +70,13 @@ def save_ses_lims(tosave_info, folder):
     this_fn = 'concat_limits.json'
     this_file_path = os.path.join(folder, this_fn)
     with open(this_file_path, 'w') as this_file:
-        for info in tosave_info:
-            json.dump(info, this_file)
-            this_file.write('\n')
+        json.dump(tosave_info, this_file)
+        #for info in tosave_info:
+            #json.dump(info, this_file)
+            #this_file.write('\n')
 
         print('Saved concatenated session info to:',this_file_path )
+    breakpoint()
 
 def run_Mountainsort(recording, directory_output, ms_sort_params = {}): 
     ##Function that will run mountainsort, extract the information from mountainsort and export to phy
@@ -196,6 +198,8 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
         tetrodes = [1] # Can give '' as tetrode input and then use this instead
         
     print('Will run on tetrodes:' + str(tetrodes))
+    
+    saved_info = 0
    
     # Extract & sort all tetrodes mentioned in tetrode list
     for tt_num in tetrodes:
@@ -238,12 +242,15 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
                 recordings_dur.append(this_dur)
                 
             #Save the sample num list and equivalent in times to file so that we can recover the original session limits
-            tosave_ts_lims = {'ts_lims': ts_lims}
-            tosave_sample_nums = {'sample_nums': sample_nums}
-            tosave_all_fns = {'all_fns': all_fns}
-            tosave_recordings_dur = {'recordings_dur' : recordings_dur}
-            tosave_info = [tosave_ts_lims, tosave_sample_nums, tosave_all_fns, tosave_recordings_dur]
-            save_ses_lims(tosave_info, concat_fold)
+            if not saved_info:
+                # Do this only once
+                tosave_info_dict ={}
+                tosave_info_dict['ts_lims'] = ts_lims
+                tosave_info_dict['sample_nums']= sample_nums
+                tosave_info_dict['all_fns']= all_fns
+                tosave_info_dict['recordings_dur'] = recordings_dur
+                save_ses_lims(tosave_info_dict, concat_fold)
+                saved_info = 1
 
                 
             # create a multirecording time extractor which concatenates the traces in time
@@ -360,8 +367,7 @@ if __name__ == '__main__':
     tetrodes_list = [25, 26, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29,
                      21, 10, 9, 8, 7, 6, 5, 4, 3 ,2 , 1, 32, 31, 30]
 
-    tetrodes_list = [12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29,
-                     21, 10, 9, 8, 7, 6, 5, 4, 3 ,2 , 1, 32, 31, 30]
+    tetrodes_list = [25]
 
     mda_params = {"samplerate": 30000, "spike_sign": -1}
     ms_sort_params = {"num_workers": 8, 'detect_threshold':3}
@@ -404,7 +410,7 @@ if __name__ == '__main__':
         # ms_folder = Path(ms_folder)
         ms_folder = '' # can comment this to use the written path instead of choosing manually
 
-    print(ms_folder)   
+    # print(ms_folder)   
     
     ### 2: run phy ###
     if run_phy:
