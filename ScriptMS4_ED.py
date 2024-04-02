@@ -76,7 +76,7 @@ def save_ses_lims(tosave_info, folder):
             #this_file.write('\n')
 
         print('Saved concatenated session info to:',this_file_path )
-    breakpoint()
+
 
 def run_Mountainsort(recording, directory_output, ms_sort_params = {}): 
     ##Function that will run mountainsort, extract the information from mountainsort and export to phy
@@ -122,7 +122,6 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
             path_to_folders = select_folder()
             # convert to os-independent path
             path_to_folders = os.path.abspath(path_to_folders)
-            
             all_dirs = os.walk(path_to_folders)
             all_f = next(os.walk(path_to_folders))[1]
             # Only keep .rec ones
@@ -135,7 +134,11 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
                 ms_folder = [os.path.join(folder, in_folder) for in_folder in in_folders if
                              ms_suf in in_folder]
                 all_ms_fold += ms_folder
-
+                
+            if len(all_ms_fold) <1:
+                print('No Mountainsort folder found! Please extract the recording(s) to Mountainsort format with Trodes')
+                return -1
+                
             # Organize alphabetically
             all_ms_fold.sort()
             num_to_merge = len(all_ms_fold)
@@ -249,10 +252,11 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
                 tosave_info_dict['sample_nums']= sample_nums
                 tosave_info_dict['all_fns']= all_fns
                 tosave_info_dict['recordings_dur'] = recordings_dur
+                tosave_info_dict['all_ms_fold'] = all_ms_fold
+                tosave_info_dict['all_fns_paths'] = all_fns_paths
                 save_ses_lims(tosave_info_dict, concat_fold)
                 saved_info = 1
 
-                
             # create a multirecording time extractor which concatenates the traces in time
             # The function MdaRecordingExtractor doesn't work in our spike interface version (0.93.0)
             # so we will try a different approach
@@ -366,8 +370,9 @@ if __name__ == '__main__':
     # rat 8
     tetrodes_list = [25, 26, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29,
                      21, 10, 9, 8, 7, 6, 5, 4, 3 ,2 , 1, 32, 31, 30]
-
+    
     tetrodes_list = [25]
+
 
     mda_params = {"samplerate": 30000, "spike_sign": -1}
     ms_sort_params = {"num_workers": 8, 'detect_threshold':3}
