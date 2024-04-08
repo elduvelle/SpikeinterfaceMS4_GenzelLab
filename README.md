@@ -85,6 +85,12 @@ sudo apt install build-essential
 
 And then you should be able to go back at the top of this readme and follow the general installation instructions.
 
+
+New - to be able to read the mda format timestamps file:  
+```
+pip install mountainlab_pytools 
+```
+
 # Usage
 To export the data from Trodes: 
 navigate to the Trodes folder and then type
@@ -130,6 +136,27 @@ Note for linux: I had an error related to `numpy` ('np.bool is deprecated'). I f
 python -m pip uninstall numpy
 python -m pip install numpy==1.23.1
 ```
+
+# HOW to recover spike times from sorted files?
+
+As far as I understand and if what kilosort does is the same as mountainsort... when mountainsort runs, it uses timestamps **indices** (instead of timestamps), so these will start at 0 (python) and increment of 1 for each new datapoint. there should be the same number of datapoints as in the original data, but it will probably be shifted by some amount if the recording system doesn't start the timestamps at 0 when recording starts (possibly because it starts at streaming time or whenever the recording file is created).
+Then, spikes are detected and clustered. Each cluster will have a set of timestamp **indices** associated to it in the `spike_times.npy`. Also note that the spikes' clusters numbers and manual category are stored in `cluster_group.tsv`. 
+How to convert the spike indices back into timestamps that match the rest of the recorded data? This uses information from the extracted .`timestamp.mda` file that should have been created when you exported the data to Mountainsort format.  
+
+option 1:
+  - find the first timestamp of the session in the .timestamps file
+  - add that to all the mountainsort (/phy) spike indices
+  Since the distance between two timestamps or two indices is always going to be 1, this should work
+  - convert the shifted timestamps into seconds by dividing by the sampling rate (ts/30000)
+
+option 2:
+  - find the first timestamp of the session in the .timestamps file
+  - find the number of total timestamps in the same file
+  - generate a list of timestamps starting at the first one and with the correct number. Check that it ends at the same end timestamp as the .timestamps file.
+  - index into this timestamp array using the spike indices corresponding to each cluster
+  - convert these timestamps into seconds by dividing by the samping rate (ts/30000)
+
+
 
 # Additional resources:
 - [Phy clustering guide](https://phy.readthedocs.io/en/latest/sorting_user_guide/)

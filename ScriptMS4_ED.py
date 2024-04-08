@@ -15,6 +15,9 @@ import spikeinterface.toolkit as st
 import spikeinterface.sorters as ss
 import spikeinterface.comparison as sc
 import spikeinterface.widgets as sw
+
+from mountainlab_pytools import mdaio
+
 import tempfile
 from tkinter import filedialog
 import tkinter as tk
@@ -33,7 +36,7 @@ import json
 def creatparam(mda_extract_params, direc): ##Function that will create the parameters and geometry file needed for mountainsort
     '''
     example of sort params:
-    sort_params = {"samplerate": 30000, "spike_sign": -12}
+    sort_params = {"samplerate": 30000, "spike_sign": -1}
     '''
 
     #mda_extract_params = {"samplerate": 30000, "spike_sign": -1}
@@ -67,6 +70,7 @@ def save_ses_lims(tosave_info, folder):
     sample_limes: same, for sample number
     ses_names: same, for session names
     '''
+
     this_fn = 'concat_limits.json'
     this_file_path = os.path.join(folder, this_fn)
     with open(this_file_path, 'w') as this_file:
@@ -101,7 +105,7 @@ def run_Mountainsort(recording, directory_output, ms_sort_params = {}):
                       progress_bar = True, total_memory = '500M')
     
     
-def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0,
+def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', 
                      mda_params = {"samplerate": 30000, "spike_sign": -1},
                      ms_sort_params = {}):
     
@@ -115,10 +119,11 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
         # compatible with Anaconda). So we can either input the files with tk or
         # directly as variables in the code
         # TODO would probably be better to input the actual mountainsort file
+        multisession = 1 #temp, ultimately merge the two pathways
         if multisession:
             ms_suf = '.mountainsort'
             timestamps_suf = '.timestamps.mda'
-            print('Please select the parent folder to the session to concatenate and sort')
+            print('Please select the parent folder to the sessions to concatenate and sort')
             path_to_folders = select_folder()
             # convert to os-independent path
             path_to_folders = os.path.abspath(path_to_folders)
@@ -139,9 +144,19 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
                 print('No Mountainsort folder found! Please extract the recording(s) to Mountainsort format with Trodes')
                 return -1
                 
-            # Organize alphabetically
-            all_ms_fold.sort()
-            num_to_merge = len(all_ms_fold)
+            # Organize alphabetically, using this tuple to get the sorting index
+            all_fns_with_ind = [(i, os.path.split(folder)[1][0:-len(ms_suf)]) for i, folder in enumerate(all_ms_fold)]
+            # Sort this alphabetically
+            all_fns_with_ind.sort( key=lambda fn: fn[1])
+            sort_inds = [pair[0] for pair in all_fns_with_ind]
+            all_fns = [pair[1] for pair in all_fns_with_ind]
+            # apply sorting to the other lists
+            # no wait that is too simple and doesn't work in python
+            # all_ms_fold = all_ms_fold[sort_inds]
+            # instead we have to do:
+            all_ms_fold = [all_ms_fold[ind] for ind in sort_inds]
+
+            num_to_merge = len(all_fns)
             print('Will concatenate ' + str(num_to_merge) + ' session(s) for spike-sorting:')
             for ind, folder in enumerate(all_ms_fold):
                 print (str(ind) + ': ' + folder)
@@ -158,13 +173,17 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
             # to the individual recordings after so that they are synchronized with the lfp and pos and events
             # or, we could remove them from those other files so that everyone starts at 0 for each session
 
-            if 0:               
-                all_fns_ts = []
+            if 1:               
+                all_fns_ts_senum = []
+                print('Reading .mda timestamps files...')
                 for [fni, fn] in enumerate(all_timestamps_fns):
-                    breakpoint()
-                    these_ts = trodesReader.readTrodesExtractedDataFile(os.path.join(all_ms_fold[fni], fn))
-                    print(these_ts['data'])
+                    these_ts = mdaio.readmda(os.path.join(all_ms_fold[fni], fn))
+                    # This is an array of what appears to be timestamps that
+                    # possibly start either when the recording file was open
+                    # or when trodes started streaming.
 
+                    all_fns_ts_senum.append([int(these_ts[0]), int(these_ts[-1]), len(these_ts)])
+                print('done')
             concat_fname = all_fns[0] + '_concat_' + str(num_to_merge)
             # from the first session name create the concatenated folder name
             # IN the parent folder
@@ -174,6 +193,9 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
             if os.path.isdir(concat_fold):
                 print('Warning! Folder for concatenated files already exists at: ')
                 print(concat_fold)
+                print('Please delete it and re-run this code, or choose a different set of sessions for sorting')
+                return
+            
             else:
                 print('creating folder for merged sessions at :')
                 print(concat_fold)
@@ -211,7 +233,9 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
             output_dir = os.path.join(concat_fold, 'output_T' + str(tt_num))
             recordings_list = []
             sample_nums = []
-            ts_lims = []
+            ts_s = []
+            ts_e = []
+            ts_num = []
             recordings_dur = []
             for [rec_i, rec_n] in enumerate(all_fns):
                 # Create the parameters, seems that they have to be saved in the same folder where mda data is
@@ -239,8 +263,11 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
                                geom_fname = 'geom.csv')
                 recordings_list.append(this_rec)
                 sample_nums.append(this_rec.get_num_samples())
-                # TODO fill this with start and end times for each session once we got them
-                ts_lims.append([])
+                #  fill this with start and end timestamps for each session, as well as number of samples
+                ts_s.append(all_fns_ts_senum[rec_i][0])
+                ts_e.append(all_fns_ts_senum[rec_i][1])
+                ts_num.append(all_fns_ts_senum[rec_i][2])
+
                 this_dur = this_rec.get_num_samples() / this_rec.get_sampling_frequency()
                 recordings_dur.append(this_dur)
                 
@@ -248,7 +275,10 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
             if not saved_info:
                 # Do this only once
                 tosave_info_dict ={}
-                tosave_info_dict['ts_lims'] = ts_lims
+                # Need to convert these to int because int32 is not supported
+                tosave_info_dict['ts_s'] = ts_s
+                tosave_info_dict['ts_e'] = ts_e
+                tosave_info_dict['ts_num'] = ts_num                                 
                 tosave_info_dict['sample_nums']= sample_nums
                 tosave_info_dict['all_fns']= all_fns
                 tosave_info_dict['recordings_dur'] = recordings_dur
@@ -256,7 +286,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', multisession = 0
                 tosave_info_dict['all_fns_paths'] = all_fns_paths
                 save_ses_lims(tosave_info_dict, concat_fold)
                 saved_info = 1
-
+            breakpoint()
             # create a multirecording time extractor which concatenates the traces in time
             # The function MdaRecordingExtractor doesn't work in our spike interface version (0.93.0)
             # so we will try a different approach
@@ -343,16 +373,11 @@ if __name__ == '__main__':
     # check https://github.com/elduvelle/SpikeinterfaceMS4_GenzelLab if unsure how
 
     # Options:
-    
-    multisession = 1 # Will ask to select a directory instead of a folder,
-    # and will concatenate all sessions in there, for now, in a new folder
-    # if not, will ask to select a single .rec file and will 
-        
     export_to_MS = 0 #First step before being able to run Mountainsort. 
     # Can also be done from the command line.
     # trodesexport -mountainsort -rec C:\shared\DATA\Screening_DM\r206\2023-03-09_r206_test_rec6_wireless.rec\2023-03-09_r206_test_rec6_wireless_merged.rec -sortingmode 1
-    
-    run_MS = 1 # 1 to run Mountainsort on all selected tetrodes. This will take
+
+    run_MS = 1 # 1 to run Mountainsort on  selected tetrodes. This will take
     # a while: make sure to run it only once! Need to have extracted the data first.
      
     run_phy = 0 # if 1 will run phy on each tetrode one after the other
@@ -409,7 +434,8 @@ if __name__ == '__main__':
     
     ### 1: run mountainsort ###
     if run_MS:
-        ms_folder = run_MS_on_folder(tetrodes_list, path_to_file, multisession, mda_params, ms_sort_params)
+        ms_folder = run_MS_on_folder(tetrodes_list, path_to_file, 
+                                     mda_params, ms_sort_params)
     else:
         # ms_folder = r'\\dartfs.dartmouth.edu\rc\lab\D\DuvelleE\ED_Postdoc_2021_data\r206\screening\2023-02-15_r206_sq3\2023-02-15_r206_sq3.mountainsort'
         # ms_folder = Path(ms_folder)
