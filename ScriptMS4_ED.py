@@ -167,8 +167,8 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
 
             num_to_merge = len(all_fns)
             print('Will concatenate ' + str(num_to_merge) + ' session(s) for spike-sorting:')
-            for ind, folder in enumerate(all_ms_fold):
-                print (str(ind) + ': ' + folder)
+            for ind, filename in enumerate(all_fns):
+                print (str(ind) + ': ' + filename)
 
             # get each session name in order    
             all_fns = [os.path.split(folder)[1][0:-len(ms_suf)] for folder in all_ms_fold]
@@ -293,7 +293,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
                 tosave_info_dict['all_fns_paths'] = all_fns_paths
                 save_ses_lims(tosave_info_dict, concat_fold)
                 saved_info = 1
-            breakpoint()
+
             # create a multirecording time extractor which concatenates the traces in time
             # The function MdaRecordingExtractor doesn't work in our spike interface version (0.93.0)
             # so we will try a different approach
