@@ -88,8 +88,17 @@ def run_Mountainsort(recording, directory_output, ms_sort_params = {}):
     ms_params = ss.Mountainsort4Sorter.default_params()
     for param, value in ms_sort_params.items():
         ms_params[param] = value
-    print(ms_params) # we will try to send this to MS
-    # Figure out how to use our parameters
+    print(ms_params) # we will send this to MS later
+
+    params = ss.get_default_sorter_params(sorter_name_or_class='mountainsort4')
+    print("Parameters:\n", params)
+
+    desc = ss.get_sorter_params_description(sorter_name_or_class='mountainsort4')
+    print("Descriptions:\n", desc)
+
+    breakpoint()
+        
+    
     this_output_folder = os.path.join(directory_output, 'results_MS')
     
     sorting_MS = ss.run_mountainsort4(recording,
@@ -168,22 +177,18 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             # Get the timestamp info for each file  
             all_timestamps_fns = [fn + timestamps_suf for fn in all_fns]
 
-            #### TODO READ THIS FILE SOMEHOW
-            #note, it's probably OK that they start at 0 for sorting, we just want to add them
-            # to the individual recordings after so that they are synchronized with the lfp and pos and events
-            # or, we could remove them from those other files so that everyone starts at 0 for each session
+            # Read the "timestamps" file to get the start and end sample numbers of this session
 
-            if 1:               
-                all_fns_ts_senum = []
-                print('Reading .mda timestamps files...')
-                for [fni, fn] in enumerate(all_timestamps_fns):
-                    these_ts = mdaio.readmda(os.path.join(all_ms_fold[fni], fn))
-                    # This is an array of what appears to be timestamps that
-                    # possibly start either when the recording file was open
-                    # or when trodes started streaming.
+            all_fns_ts_senum = []
+            print('Reading .mda timestamps files...')
+            for [fni, fn] in enumerate(all_timestamps_fns):
+                these_ts = mdaio.readmda(os.path.join(all_ms_fold[fni], fn))
+                # This is an array of what appears to be timestamps that
+                # possibly start either when the recording file was open
+                # or when trodes started streaming.
 
-                    all_fns_ts_senum.append([int(these_ts[0]), int(these_ts[-1]), len(these_ts)])
-                print('done')
+                all_fns_ts_senum.append([int(these_ts[0]), int(these_ts[-1]), len(these_ts)])
+            print('done')
             concat_fname = all_fns[0] + '_concat_' + str(num_to_merge)
             # from the first session name create the concatenated folder name
             # IN the parent folder
@@ -194,7 +199,8 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
                 print('Warning! Folder for concatenated files already exists at: ')
                 print(concat_fold)
                 print('Please delete it and re-run this code, or choose a different set of sessions for sorting')
-                return
+                #return
+                breakpoint()
             
             else:
                 print('creating folder for merged sessions at :')
@@ -203,6 +209,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
 
             
         else:
+            #TODO merge this with the multisession option
             print('Please select main data file (.rec) to be sorted')
             path_to_file = select_file()
             print(path_to_file)
