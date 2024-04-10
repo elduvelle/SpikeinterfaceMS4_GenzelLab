@@ -49,7 +49,7 @@ def creatparam(mda_extract_params, direc): ##Function that will create the param
     this_file_path = os.path.join(direc,'params.json')
     with open(this_file_path, 'w') as mon_fichier:
         json.dump(mda_extract_params, mon_fichier)           
-        print('Saved param file to:',this_file_path )
+        # print('Saved param file to:',this_file_path )
 
 def save_ms_params(ms_sorting_params, folder):
     '''
@@ -60,7 +60,7 @@ def save_ms_params(ms_sorting_params, folder):
     this_file_path = os.path.join(folder,'ms_params.json')
     with open(this_file_path, 'w') as my_file:
         json.dump(ms_sorting_params, my_file)           
-        print('Saved ms param file to:', this_file_path )
+        # print('Saved ms param file to:', this_file_path )
         
 def save_ses_lims(tosave_info, folder):
     '''
@@ -75,28 +75,46 @@ def save_ses_lims(tosave_info, folder):
     this_file_path = os.path.join(folder, this_fn)
     with open(this_file_path, 'w') as this_file:
         json.dump(tosave_info, this_file)
-        #for info in tosave_info:
-            #json.dump(info, this_file)
-            #this_file.write('\n')
-
-        print('Saved concatenated session info to:',this_file_path )
+        print('Saved session(s) sample number info to:',this_file_path )
 
 
-def run_Mountainsort(recording, directory_output, ms_sort_params = {}): 
+def run_Mountainsort(recording, directory_output, ms_sort_params = {}):
+    verbose = 0;
     ##Function that will run mountainsort, extract the information from mountainsort and export to phy
     ss.installed_sorters()
     ms_params = ss.Mountainsort4Sorter.default_params()
     for param, value in ms_sort_params.items():
         ms_params[param] = value
-    print(ms_params) # we will send this to MS later
 
-    params = ss.get_default_sorter_params(sorter_name_or_class='mountainsort4')
-    print("Parameters:\n", params)
 
-    desc = ss.get_sorter_params_description(sorter_name_or_class='mountainsort4')
-    print("Descriptions:\n", desc)
+    if 0:
+        params = ss.get_default_sorter_params(sorter_name_or_class='mountainsort4')
+        print("Parameters:\n", params)
+        desc = ss.get_sorter_params_description(sorter_name_or_class='mountainsort4')
+        print("Descriptions:\n", desc)
 
-    breakpoint()
+        # Note: this only works in more recent versions of spike interface.
+        # For now we can get the parameters description from:
+        # https://github.com/SpikeInterface/spikeinterface/blob/264c2b6b2915eed40327e93e9edd11acee551974/src/spikeinterface/sorters/external/mountainsort4.py#L37-L52
+
+    desc = {
+        "detect_sign": "Use -1 (negative) or 1 (positive) depending " "on the sign of the spikes in the recording",
+        "adjacency_radius": "Radius in um to build channel neighborhood "
+        "(Use -1 to include all channels in every neighborhood)",
+        "freq_min": "High-pass filter cutoff frequency",
+        "freq_max": "Low-pass filter cutoff frequency",
+        "filter": "Enable or disable filter",
+        "whiten": "Enable or disable whitening",
+        "num_workers": "Number of workers (if None, half of the cpu number is used)",
+        "clip_size": "Number of samples per waveform",
+        "detect_threshold": "Threshold for spike detection",
+        "detect_interval": "Minimum number of timepoints between events detected on the same channel",
+        "tempdir": "Temporary directory for mountainsort (available for ms4 >= 1.0.2)s",
+    }
+    if verbose:
+        print(ms_params) # we will send this to MS later       
+        print("Descriptions:\n", desc)
+    
         
     
     this_output_folder = os.path.join(directory_output, 'results_MS')
@@ -106,6 +124,12 @@ def run_Mountainsort(recording, directory_output, ms_sort_params = {}):
                                       verbose = True, **ms_params,)
         
     this_output_folder = os.path.join(directory_output,'wf_MS')
+
+    # NOTE: this gives an error, if we only filter using MS:
+    # from 'waveform_extractor'
+    # "raise Exception('The recording is not filtered, you must filter it using `bandpass_filter()`."
+    # so instead we pre-filter the recording and only do whitening in ms
+
     we_all = si.extract_waveforms(recording, sorting_MS, folder = this_output_folder, 
                                       max_spikes_per_unit = None, progress_bar = True)
     # What is this total_memory parameter?
@@ -116,7 +140,7 @@ def run_Mountainsort(recording, directory_output, ms_sort_params = {}):
     
 def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', 
                      mda_params = {"samplerate": 30000, "spike_sign": -1},
-                     ms_sort_params = {}):
+                     ms_sort_params = {}, multisession = 0):
     
     do_filter_before_ms = 1 # 1: filter in the spike-band before sending the recording to mountainsort
     # note, mountainsort also has the possibility to whiten and filter
@@ -128,11 +152,12 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
         # compatible with Anaconda). So we can either input the files with tk or
         # directly as variables in the code
         # TODO would probably be better to input the actual mountainsort file
-        multisession = 1 #temp, ultimately merge the two pathways
+        
+        ms_suf = '.mountainsort'
+        timestamps_suf = '.timestamps.mda'
         if multisession:
-            ms_suf = '.mountainsort'
-            timestamps_suf = '.timestamps.mda'
-            print('Please select the parent folder to the sessions to concatenate and sort')
+
+            print('Please select the parent folder to the sessions to concatenate (alphabetically) and spike-sort')
             path_to_folders = select_folder()
             # convert to os-independent path
             path_to_folders = os.path.abspath(path_to_folders)
@@ -199,7 +224,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
                 print('Warning! Folder for concatenated files already exists at: ')
                 print(concat_fold)
                 print('Please delete it and re-run this code, or choose a different set of sessions for sorting')
-                #return
+                return # comment this if you don't care, but it will erase all the sorting results
                 breakpoint()
             
             else:
@@ -209,7 +234,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
 
             
         else:
-            #TODO merge this with the multisession option
+            # Only doing 1 session so selecting a rec file instead of a folder
             print('Please select main data file (.rec) to be sorted')
             path_to_file = select_file()
             print(path_to_file)
@@ -221,12 +246,37 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
                 
             print('Chosen folder path: ' + data_folder)   
             print('Chosen filename: ' + data_fn)
-            
+
             ms_folder = os.path.join(data_folder, data_fn_noext +'.mountainsort')
             print('Mountainsort path:' + ms_folder)
 
 
+            # Get the timestamp info for this file  
+            timestamps_fn = data_fn_noext + timestamps_suf
+
+            # Read the "timestamps" file to get the start, end and sample numbers of this session
+            ts_senum = []
+            print('Reading .mda timestamp file...')
+            these_ts = mdaio.readmda(os.path.join(ms_folder, timestamps_fn))
+            # This is an array of what appears to be timestamps that
+            # possibly start either when the recording file was open
+            # or when trodes started streaming.
+            print('done')
+
+            # save it
+            tosave_info_dict = {};
+            tosave_info_dict['ts_s'] = [int(these_ts[0])]
+            tosave_info_dict['ts_e'] = [int(these_ts[-1])]
+            tosave_info_dict['ts_num'] = [len(these_ts)]                                
+            tosave_info_dict['all_fns']= [data_fn_noext]
+            tosave_info_dict['all_ms_fold'] = [ms_folder]
+            tosave_info_dict['all_fns_paths'] = [data_folder]
+            # This will be saved with the first tetrode sorted
+
+            
+
     if not tetrodes:
+        # default
         tetrodes = [1] # Can give '' as tetrode input and then use this instead
         
     print('Will run on tetrodes:' + str(tetrodes))
@@ -236,7 +286,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
     # Extract & sort all tetrodes mentioned in tetrode list
     for tt_num in tetrodes:
         if multisession:
-            # load each recording in 'rec' format with mda recording extractor??
+            # load each recording in 'rec' format with mda recording extractor & concatenate them
             output_dir = os.path.join(concat_fold, 'output_T' + str(tt_num))
             recordings_list = []
             sample_nums = []
@@ -257,14 +307,15 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
 
                 # NOTE IMPORTANT the times here are by default starting at 0 with spikeinterface
                 # We can get them to start at the actual time by computing the new times (add
-                # the start time to the curren time) and then use rec.set_times(new_time)
+                # the start time to the current time) and then use rec.set_times(new_time)
                 # default_times = rec.get_times()
                 # new_times = default_times + 5
                 # rec.set_times(new_times)
 
                 # looks like we can find the start time using timestamps.mda file extracted by Trodes!
-
-                # question: how to find the start time??
+                # note however that these are separate sessions so the start time of a later recording
+                # might be smaller than that of an earlier recording, just because they have no link
+                # across sessions
                 this_rec = se.MdaRecordingExtractor(all_ms_fold[rec_i], raw_fname = mda_name, 
                                params_fname = 'params.json',
                                geom_fname = 'geom.csv')
@@ -305,13 +356,13 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             # Do filtering
             w = sw.plot_timeseries(multirecording) #plot the first second of the recording
             if do_filter_before_ms:
-                print('Filtering in spike band')
+                print('Pre-filtering in spike band')
                 multirecording = st.bandpass_filter(multirecording, freq_min=300, freq_max=6000) #Band pass filtering
                 # if we don't do this, ms gives an error, even though it also has filtering in its parameters
                 w = sw.plot_timeseries(multirecording)
                 multirecording.annotate(is_filtered = True)
             else:
-                print('Not filtering the recording')
+                print('Not pre-filtering the recording')
 
             # run mountainsort, give it the concat_fold as output dir
 
@@ -327,30 +378,36 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             print('********************************')
                         
         else:
+            # Save the info about this session, just once for all tetrodes
+            if not saved_info:
+                save_ses_lims(tosave_info_dict, data_folder)
+                saved_info = 1
             
             mda_name = data_fn_noext +'.nt' + str(tt_num) + '.mda'   
 
             output_dir = os.path.join(ms_folder, 'output_T' + str(tt_num))
 
-            creatparam(sort_params, ms_folder) # Create the parameter and geom file, I think this can
+            creatparam(mda_params, ms_folder) # Create the parameter and geom file, I think this can
             # be done only once           
 
             rec = se.MdaRecordingExtractor(ms_folder, raw_fname = mda_name, 
                                            params_fname = 'params.json',
                                            geom_fname = 'geom.csv')
             w = sw.plot_timeseries(rec) #plot the first second of the recording
-            if do_filter:
+            if do_filter_before_ms:
+                print('Pre-filtering in spike band')
                 recording_f = st.bandpass_filter(rec, freq_min=300, freq_max=6000) #Band pass filtering
                 # Note it looks like we don't need to do this with our ED data?
                 w = sw.plot_timeseries(recording_f)
                 rec.annotate(is_filtered = True)
             else:
+                print('Not pre-filtering the recording')
                 recording_f = rec
                 
             print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
             print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
             print('Running Mountainsort on file:' + mda_name + '...')
-            run_Mountainsort(recording_f, output_dir) ## Run mountainsort and export to phy
+            run_Mountainsort(recording_f, output_dir, ms_sort_params) ## Run mountainsort and export to phy
             print('********************************')
             print('Finished tetrode:' + str(tt_num))
             print('********************************')
@@ -374,6 +431,8 @@ def select_folder():
     
 
 if __name__ == '__main__':
+
+    plt.ion() # will only show plot content at the end apparently
     
 
     # Note: data needs to have been extracted in mountainsort format first!
@@ -405,9 +464,17 @@ if __name__ == '__main__':
     
     tetrodes_list = [25]
 
+    # 1: combine multiple sessions together (select the parent folder).
+    # 0: only sort 1 session, select the .rec file.
+    multisession = 1
+
 
     mda_params = {"samplerate": 30000, "spike_sign": -1}
-    ms_sort_params = {"num_workers": 8, 'detect_threshold':3}
+    # None in num workers mean half of the cpu workers will be used
+    # Detect threshold is to detect spikes on the 'normalized' signal
+    # where std has been set to 1. 3 was the default.
+    # We set the filter to false here becaue we pre-filter the recording
+    ms_sort_params = {"num_workers": None, 'detect_threshold':2.5, 'filter': False} 
    
     
     path_to_file = '' # Change this to an actual path to the raw data file, 
@@ -415,6 +482,7 @@ if __name__ == '__main__':
     
     
     ### 0: extract SpikeGadgets raw data into mountainsort format ###
+    # Note, I am currently using matlab for this
     if export_to_MS:
         # TODO finish this
 
@@ -442,7 +510,7 @@ if __name__ == '__main__':
     ### 1: run mountainsort ###
     if run_MS:
         ms_folder = run_MS_on_folder(tetrodes_list, path_to_file, 
-                                     mda_params, ms_sort_params)
+                                     mda_params, ms_sort_params, multisession)
     else:
         # ms_folder = r'\\dartfs.dartmouth.edu\rc\lab\D\DuvelleE\ED_Postdoc_2021_data\r206\screening\2023-02-15_r206_sq3\2023-02-15_r206_sq3.mountainsort'
         # ms_folder = Path(ms_folder)

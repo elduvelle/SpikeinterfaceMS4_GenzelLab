@@ -158,6 +158,21 @@ option 2:
 
 
 
+# Additional note: to avoid the `ResourceWarning: unclosed file <_io.BufferedReader name='` when running the principal_component function, you can
+add this modification to the spike interface code C:\ProgramData\Anaconda3\envs\MoutainSort_Phy_test\Lib\site-packages\spikeinterface\toolkit\postprocessing\principal_component.py:  
+
+swap:  
+```
+pca = pickle.load(pca_file.open("rb"))
+```
+for:  
+```
+with open(pca_file, "rb") as this_file:
+	pca = pickle.load(this_file)
+```
+
+(This is probably fixed in some later release)
+
 # Additional resources:
 - [Phy clustering guide](https://phy.readthedocs.io/en/latest/sorting_user_guide/)
 - [Next steps: extracting Phy data](https://phy.readthedocs.io/en/latest/sorting_user_guide/#analysis)
