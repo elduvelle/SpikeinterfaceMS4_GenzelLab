@@ -15,6 +15,8 @@ import spikeinterface.toolkit as st
 import spikeinterface.sorters as ss
 import spikeinterface.comparison as sc
 import spikeinterface.widgets as sw
+# This needs a more recent version of si but we need it to process bad channels
+#import spikeinterface.preprocessing as spre
 
 from mountainlab_pytools import mdaio
 
@@ -223,8 +225,9 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             if os.path.isdir(concat_fold):
                 print('Warning! Folder for concatenated files already exists at: ')
                 print(concat_fold)
-                print('Please delete it and re-run this code, or choose a different set of sessions for sorting')
-                return # comment this if you don't care, but it will erase all the sorting results
+                print('Please delete it and re-run this code, or make sure the same tetrodes are not re-sorted')
+                #return # comment this if you don't care, but it will erase all the sorting results if sorting the
+                # same tetrodes
                 breakpoint()
             
             else:
@@ -432,7 +435,7 @@ def select_folder():
 
 if __name__ == '__main__':
 
-    plt.ion() # will only show plot content at the end apparently
+    # plt.ion() # will only show plot content at the end apparently
     
 
     # Note: data needs to have been extracted in mountainsort format first!
@@ -447,11 +450,11 @@ if __name__ == '__main__':
     # a while: make sure to run it only once! Need to have extracted the data first.
      
     run_phy = 0 # if 1 will run phy on each tetrode one after the other
+    # Warning, this mode seems to have a memory leak at the moment.
     # Note: you might also want to start running it once it's finished with 
     # one tetrode, in that case, run the code printed once mountainsort ends 
-    # for one tetrode 
+    # for one tetrode in the console (same python environment)
     
-    extract_LFP = 0 # TODO (or do we want to do this in Matlab?)
     
     # list here the tetrodes that you want to be sorted by Mountainsort.
     tetrodes_list = [24, 25, 26, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29,
@@ -462,7 +465,8 @@ if __name__ == '__main__':
     tetrodes_list = [25, 26, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29,
                      21, 10, 9, 8, 7, 6, 5, 4, 3 ,2 , 1, 32, 31, 30]
     
-    tetrodes_list = [25]
+    tetrodes_list = [25, 26, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29,
+                     21, 10, 9, 8, 7, 6, 5, 4, 3 ,2 , 1, 32, 31, 30]
 
     # 1: combine multiple sessions together (select the parent folder).
     # 0: only sort 1 session, select the .rec file.
@@ -473,8 +477,8 @@ if __name__ == '__main__':
     # None in num workers mean half of the cpu workers will be used
     # Detect threshold is to detect spikes on the 'normalized' signal
     # where std has been set to 1. 3 was the default.
-    # We set the filter to false here becaue we pre-filter the recording
-    ms_sort_params = {"num_workers": None, 'detect_threshold':2.5, 'filter': False} 
+    # We set the filter to false here becauae we pre-filter the recording
+    ms_sort_params = {"num_workers": None, 'detect_threshold':2.5, 'filter': False, 'whiten':True} 
    
     
     path_to_file = '' # Change this to an actual path to the raw data file, 
@@ -484,7 +488,7 @@ if __name__ == '__main__':
     ### 0: extract SpikeGadgets raw data into mountainsort format ###
     # Note, I am currently using matlab for this
     if export_to_MS:
-        # TODO finish this
+        # TODO finish this, currently not working
 
         print('Please select main data file (.rec) ')
         path_to_file = select_file()
@@ -512,8 +516,6 @@ if __name__ == '__main__':
         ms_folder = run_MS_on_folder(tetrodes_list, path_to_file, 
                                      mda_params, ms_sort_params, multisession)
     else:
-        # ms_folder = r'\\dartfs.dartmouth.edu\rc\lab\D\DuvelleE\ED_Postdoc_2021_data\r206\screening\2023-02-15_r206_sq3\2023-02-15_r206_sq3.mountainsort'
-        # ms_folder = Path(ms_folder)
         ms_folder = '' # can comment this to use the written path instead of choosing manually
 
     # print(ms_folder)   
