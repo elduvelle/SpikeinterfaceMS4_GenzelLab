@@ -478,7 +478,7 @@ if __name__ == '__main__':
     # Detect threshold is to detect spikes on the 'normalized' signal
     # where std has been set to 1. 3 was the default.
     # We set the filter to false here becauae we pre-filter the recording
-    ms_sort_params = {"num_workers": None, 'detect_threshold':2.5, 'filter': False, 'whiten':True} 
+    ms_sort_params = {"num_workers": None, 'detect_threshold':3, 'filter': False, 'whiten':True} 
    
     
     path_to_file = '' # Change this to an actual path to the raw data file, 
