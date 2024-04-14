@@ -220,6 +220,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             # from the first session name create the concatenated folder name
             # IN the parent folder
             concat_fold = os.path.join(path_to_folders, concat_fname)
+            sample_figs_foldc = os.path.join(concat_fold, 'sample_figures')
 
             # Check if exist first
             if os.path.isdir(concat_fold):
@@ -234,6 +235,8 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
                 print('creating folder for merged sessions at :')
                 print(concat_fold)
                 os.mkdir(concat_fold)
+                # Also create a folder for sample figures
+                os.mkdir(sample_figs_fold)
 
             
         else:
@@ -276,7 +279,9 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             tosave_info_dict['all_fns_paths'] = [data_folder]
             # This will be saved with the first tetrode sorted
 
-            
+                        concat_figs_fold = os.path.join(concat_fold, 'sample_figures')
+            # Create a folder for sample figures
+            os.mkdir(concat_figs_fold)
 
     if not tetrodes:
         # default
@@ -287,6 +292,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
     saved_info = 0
    
     # Extract & sort all tetrodes mentioned in tetrode list
+    
     for tt_num in tetrodes:
         if multisession:
             # load each recording in 'rec' format with mda recording extractor & concatenate them
@@ -319,7 +325,8 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
                 # note however that these are separate sessions so the start time of a later recording
                 # might be smaller than that of an earlier recording, just because they have no link
                 # across sessions
-                this_rec = se.MdaRecordingExtractor(all_ms_fold[rec_i], raw_fname = mda_name, 
+                this_rec = se.MdaRecordingExtractor(all_ms_fold[rec_i],\
+                                                    raw_fname = mda_name, 
                                params_fname = 'params.json',
                                geom_fname = 'geom.csv')
                 recordings_list.append(this_rec)
@@ -357,12 +364,31 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             multirecording = si.concatenate_recordings(recordings_list)
 
             # Do filtering
-            w = sw.plot_timeseries(multirecording) #plot the first second of the recording
+            w = sw.plot_timeseries(multirecording)
+            #plot the first second of the recording
+            # Make this save to file instead of showing
+            prev_plot_title = 'data sample for ' + concat_fname + '-tt' + str(tt_num) +\
+                              ' pre-filtering'
+
+            prev_plot_path = sample_figs_fold
+            plt.title(prev_plot_title)
+            plt.savefig(os.path.join(prev_plot_path, prev_plot_title) + '.png',\
+                        bbox_inches='tight')
+            plt.close()
+            
             if do_filter_before_ms:
                 print('Pre-filtering in spike band')
                 multirecording = st.bandpass_filter(multirecording, freq_min=300, freq_max=6000) #Band pass filtering
                 # if we don't do this, ms gives an error, even though it also has filtering in its parameters
                 w = sw.plot_timeseries(multirecording)
+                # Make this save to file instead of showing
+                prev_plot_title = 'data sample for' + concat_fname + '-tt' +\
+                                  str(tt_num) + ', post-filtering'
+                
+                prev_plot_path = sample_figs_fold
+                plt.title(prev_plot_title)
+                plt.savefig(os.path.join(prev_plot_path, prev_plot_title) + '.png', bbox_inches='tight')
+                plt.close()
                 multirecording.annotate(is_filtered = True)
             else:
                 print('Not pre-filtering the recording')
@@ -396,12 +422,25 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             rec = se.MdaRecordingExtractor(ms_folder, raw_fname = mda_name, 
                                            params_fname = 'params.json',
                                            geom_fname = 'geom.csv')
+
             w = sw.plot_timeseries(rec) #plot the first second of the recording
+            # Make this save to file instead of showing
+            prev_plot_title = 'data sample for' + data_fn_noext + '-tt' + str(tt_num) + ' pre-filtering'
+            prev_plot_path = data_folder
+            plt.title(prev_plot_title)
+            plt.savefig(os.path.join(prev_plot_path, prev_plot_title) + '.png', bbox_inches='tight')
+            plt.close()
+            
+            
             if do_filter_before_ms:
                 print('Pre-filtering in spike band')
                 recording_f = st.bandpass_filter(rec, freq_min=300, freq_max=6000) #Band pass filtering
                 # Note it looks like we don't need to do this with our ED data?
                 w = sw.plot_timeseries(recording_f)
+                prev_plot_title = 'data sample for' + data_fn_noext + '-tt' + str(tt_num) + ' post-filtering'
+                plt.title(prev_plot_title)
+                plt.savefig(os.path.join(prev_plot_path, prev_plot_title) + '.png', bbox_inches='tight')
+                plt.close()
                 rec.annotate(is_filtered = True)
             else:
                 print('Not pre-filtering the recording')
@@ -467,7 +506,7 @@ if __name__ == '__main__':
     
     tetrodes_list = [25, 26, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29,
                      21, 10, 9, 8, 7, 6, 5, 4, 3 ,2 , 1, 32, 31, 30]
-
+    tetrodes_list = [26]
     # 1: combine multiple sessions together (select the parent folder).
     # 0: only sort 1 session, select the .rec file.
     multisession = 1
@@ -476,9 +515,10 @@ if __name__ == '__main__':
     mda_params = {"samplerate": 30000, "spike_sign": -1}
     # None in num workers mean half of the cpu workers will be used
     # Detect threshold is to detect spikes on the 'normalized' signal
-    # where std has been set to 1. 3 was the default.
-    # We set the filter to false here becauae we pre-filter the recording
-    ms_sort_params = {"num_workers": None, 'detect_threshold':3, 'filter': False, 'whiten':True} 
+    # where std has been set to 1. 3 is the default.
+    # We set the filter to false here because we pre-filter the recording
+    ms_sort_params = {"num_workers": None, 'detect_threshold':3, \
+                      'filter': False, 'whiten':True} 
    
     
     path_to_file = '' # Change this to an actual path to the raw data file, 
