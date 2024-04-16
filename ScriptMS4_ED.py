@@ -220,13 +220,13 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             # from the first session name create the concatenated folder name
             # IN the parent folder
             concat_fold = os.path.join(path_to_folders, concat_fname)
-            sample_figs_foldc = os.path.join(concat_fold, 'sample_figures')
+            sample_figs_fold = os.path.join(concat_fold, 'sample_figures')
 
             # Check if exist first
             if os.path.isdir(concat_fold):
                 print('Warning! Folder for concatenated files already exists at: ')
                 print(concat_fold)
-                print('Please delete it and re-run this code, or make sure the same tetrodes are not re-sorted')
+                print('Please delete it and re-run this code, or press "c" then enter to continue')
                 #return # comment this if you don't care, but it will erase all the sorting results if sorting the
                 # same tetrodes
                 breakpoint()
@@ -279,9 +279,9 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             tosave_info_dict['all_fns_paths'] = [data_folder]
             # This will be saved with the first tetrode sorted
 
-                        concat_figs_fold = os.path.join(concat_fold, 'sample_figures')
+            prev_figs_fold = os.path.join(ms_folder, 'sample_figures')
             # Create a folder for sample figures
-            os.mkdir(concat_figs_fold)
+            os.mkdir(prev_figs_fold)
 
     if not tetrodes:
         # default
@@ -426,7 +426,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             w = sw.plot_timeseries(rec) #plot the first second of the recording
             # Make this save to file instead of showing
             prev_plot_title = 'data sample for' + data_fn_noext + '-tt' + str(tt_num) + ' pre-filtering'
-            prev_plot_path = data_folder
+            prev_plot_path = prev_figs_fold
             plt.title(prev_plot_title)
             plt.savefig(os.path.join(prev_plot_path, prev_plot_title) + '.png', bbox_inches='tight')
             plt.close()
@@ -439,7 +439,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
                 w = sw.plot_timeseries(recording_f)
                 prev_plot_title = 'data sample for' + data_fn_noext + '-tt' + str(tt_num) + ' post-filtering'
                 plt.title(prev_plot_title)
-                plt.savefig(os.path.join(prev_plot_path, prev_plot_title) + '.png', bbox_inches='tight')
+                plt.savefig(os.pathc.join(prev_plot_path, prev_plot_title) + '.png', bbox_inches='tight')
                 plt.close()
                 rec.annotate(is_filtered = True)
             else:
@@ -506,7 +506,8 @@ if __name__ == '__main__':
     
     tetrodes_list = [25, 26, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29,
                      21, 10, 9, 8, 7, 6, 5, 4, 3 ,2 , 1, 32, 31, 30]
-    tetrodes_list = [26]
+    tetrodes_list = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29,
+                     21, 10, 9, 8, 7, 6, 5, 4, 3 ,2 , 1, 32, 31, 30]
     # 1: combine multiple sessions together (select the parent folder).
     # 0: only sort 1 session, select the .rec file.
     multisession = 1
