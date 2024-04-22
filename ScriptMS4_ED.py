@@ -32,6 +32,7 @@ import numpy as np
  
 from spikeinterface.exporters import export_to_phy
 import json
+from extract_trodes_conf_v2 import extract_conf
 
 
 
@@ -142,7 +143,7 @@ def run_Mountainsort(recording, directory_output, ms_sort_params = {}):
     
 def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', 
                      mda_params = {"samplerate": 30000, "spike_sign": -1},
-                     ms_sort_params = {}, multisession = 0):
+                     ms_sort_params = {}, multisession = 0, extract_config = 1):
     
     do_filter_before_ms = 1 # 1: filter in the spike-band before sending the recording to mountainsort
     # note, mountainsort also has the possibility to whiten and filter
@@ -169,13 +170,23 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             all_f = [os.path.join(path_to_folders, folder) for folder in all_f if '.rec' in folder]
             # Find the .mountainsort folder in each folder
             all_ms_fold = []
+            all_rec_fns = []
             for folder in all_f:
                 in_folders = next(os.walk(folder))[1]
                 # add the full path
                 ms_folder = [os.path.join(folder, in_folder) for in_folder in in_folders if
                              ms_suf in in_folder]
                 all_ms_fold += ms_folder
-                
+
+                in_files = next(os.walk(folder))[2]
+                this_rec_fn = [os.path.join(folder, this_file) for this_file in in_files if '.rec' in this_file]
+                if len(this_rec_fn) ==1:
+                    all_rec_fns+= this_rec_fn
+                elif len(this_rec_fn)==0:
+                    print('Warning! No .rec file found in ' + folder)
+                else:
+                    print('Warning! More than one .rec file found in ' + folder)
+
             if len(all_ms_fold) <1:
                 print('No Mountainsort folder found! Please extract the recording(s) to Mountainsort format with Trodes')
                 return -1
@@ -215,7 +226,21 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
                 # or when trodes started streaming.
 
                 all_fns_ts_senum.append([int(these_ts[0]), int(these_ts[-1]), len(these_ts)])
-            print('done')
+                
+            print('Done!')
+
+            if extract_config:
+                print('Extracting configuration header from all .rec files...')
+                for rec_fn in all_rec_fns:
+                    # Also extract and ideally read the header from the .rec file
+                    # maxlines might need to be updated (increased) for larger channel counts?
+                    extract_conf(rec_fn, maxlines = 1000)
+                    
+                    # TODO read this and add the relevant info into tosavedict
+
+                    # TODO ALSO maybe use the systemtime at creation to order the merge???
+            print('Done')
+            
             concat_fname = all_fns[0] + '_concat_' + str(num_to_merge)
             # from the first session name create the concatenated folder name
             # IN the parent folder
@@ -268,6 +293,11 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             # possibly start either when the recording file was open
             # or when trodes started streaming.
             print('done')
+
+            # Also extract and ideally read the header from the .rec file
+            # maxlines might need to be updated (increased) for larger channel counts?
+            extract_conf(path_to_file, maxlines = 1000)
+            # TODO read this and add the relevant info into tosavedict
 
             # save it
             tosave_info_dict = {};
@@ -511,6 +541,8 @@ if __name__ == '__main__':
     # 1: combine multiple sessions together (select the parent folder).
     # 0: only sort 1 session, select the .rec file.
     multisession = 1
+    extract_config = 1 # Will create a readable version of the recording with the
+    # extension .extracted_trodes_header.xml
 
 
     mda_params = {"samplerate": 30000, "spike_sign": -1}
@@ -555,7 +587,8 @@ if __name__ == '__main__':
     ### 1: run mountainsort ###
     if run_MS:
         ms_folder = run_MS_on_folder(tetrodes_list, path_to_file, 
-                                     mda_params, ms_sort_params, multisession)
+                                     mda_params, ms_sort_params, multisession,\
+                                     extract_config)
     else:
         ms_folder = '' # can comment this to use the written path instead of choosing manually
 
