@@ -32,7 +32,9 @@ import numpy as np
  
 from spikeinterface.exporters import export_to_phy
 import json
-from extract_trodes_conf_v2 import extract_conf
+
+from conf_utils import extract_config, read_trodes_config
+
 
 
 
@@ -143,13 +145,16 @@ def run_Mountainsort(recording, directory_output, ms_sort_params = {}):
     
 def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '', 
                      mda_params = {"samplerate": 30000, "spike_sign": -1},
-                     ms_sort_params = {}, multisession = 0, extract_config = 1):
+                     ms_sort_params = {}, multisession = 0,\
+                     extract_conf_file = 1, reextract_ses_info_only = 0):
     
     do_filter_before_ms = 1 # 1: filter in the spike-band before sending the recording to mountainsort
     # note, mountainsort also has the possibility to whiten and filter
     
     if not path_to_file or not os.path.isfile(path_to_file):
         # wasn't given proper file as input so we will ask the user for it
+        # TODO now everything is below this when this should just be getting
+        # the filename, fix it
     
         # Note ED: the 'input' command makes Spyder crash (at least the version that's
         # compatible with Anaconda). So we can either input the files with tk or
@@ -158,6 +163,9 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
         
         ms_suf = '.mountainsort'
         timestamps_suf = '.timestamps.mda'
+        conf_ext = '.extracted_trodes_header.xml'
+        conf_maxlines = 1000
+        all_trodes_config = {}
         if multisession:
 
             print('Please select the parent folder to the sessions to concatenate (alphabetically) and spike-sort')
@@ -229,15 +237,20 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
                 
             print('Done!')
 
-            if extract_config:
+            if extract_conf_file:
                 print('Extracting configuration header from all .rec files...')
                 for rec_fn in all_rec_fns:
+                    [this_path, data_fn] = os.path.split(rec_fn)
+                    [data_fn_noext, this_ext] =  os.path.splitext(data_fn)
                     # Also extract and ideally read the header from the .rec file
                     # maxlines might need to be updated (increased) for larger channel counts?
-                    extract_conf(rec_fn, maxlines = 1000)
-                    
-                    # TODO read this and add the relevant info into tosavedict
+                    conf_fn = extract_config(rec_fn, conf_maxlines, conf_ext)
 
+                    # Read this and add the relevant info into tosavedict
+                    trodes_config = read_trodes_config(conf_fn)
+                    all_trodes_config[data_fn_noext] = trodes_config
+            print(all_trodes_config)
+            
                     # TODO ALSO maybe use the systemtime at creation to order the merge???
             print('Done')
             
@@ -294,11 +307,14 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             # or when trodes started streaming.
             print('done')
 
-            # Also extract and ideally read the header from the .rec file
-            # maxlines might need to be updated (increased) for larger channel counts?
-            extract_conf(path_to_file, maxlines = 1000)
-            # TODO read this and add the relevant info into tosavedict
-
+            if extract_conf_file:
+                # Also extract and ideally read the header from the .rec file
+                # maxlines might need to be updated (increased) for larger channel counts?
+                conf_fn = extract_config(rec_fn, conf_maxlines, conf_ext)
+                # Read this and add the relevant info into tosavedict
+                trodes_config = read_trodes_config(conf_fn)
+                all_trodes_config[data_fn_noext] = trodes_config
+            
             # save it
             tosave_info_dict = {};
             tosave_info_dict['ts_s'] = [int(these_ts[0])]
@@ -307,6 +323,11 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             tosave_info_dict['all_fns']= [data_fn_noext]
             tosave_info_dict['all_ms_fold'] = [ms_folder]
             tosave_info_dict['all_fns_paths'] = [data_folder]
+            tosave_info_dict['ts_creat'] = trodes_config['ts_creat']
+            tosave_info_dict['systime_creat'] = trodes_config['systime_creat']
+            tosave_info_dict['trodes_ver'] = trodes_config['trodes_ver']
+            tosave_info_dict['sampling_rate'] = trodes_config['sampling_rate']
+
             # This will be saved with the first tetrode sorted
 
             prev_figs_fold = os.path.join(ms_folder, 'sample_figures')
@@ -333,6 +354,10 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             ts_e = []
             ts_num = []
             recordings_dur = []
+            ts_creat = []
+            systime_creat = []
+            trodes_ver = []
+            sampling_rate = []
             for [rec_i, rec_n] in enumerate(all_fns):
                 # Create the parameters, seems that they have to be saved in the same folder where mda data is
 
@@ -367,7 +392,10 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
                 ts_num.append(all_fns_ts_senum[rec_i][2])
 
                 this_dur = this_rec.get_num_samples() / this_rec.get_sampling_frequency()
-                recordings_dur.append(this_dur)
+                ts_creat.append(all_trodes_config[rec_n]['ts_creat'])
+                systime_creat.append(all_trodes_config[rec_n]['systime_creat'])
+                trodes_ver.append(all_trodes_config[rec_n]['trodes_ver'])
+                sampling_rate.append(all_trodes_config[rec_n]['sampling_rate'])                                     
                 
             #Save the sample num list and equivalent in times to file so that we can recover the original session limits
             if not saved_info:
@@ -382,8 +410,16 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
                 tosave_info_dict['recordings_dur'] = recordings_dur
                 tosave_info_dict['all_ms_fold'] = all_ms_fold
                 tosave_info_dict['all_fns_paths'] = all_fns_paths
+                tosave_info_dict['ts_creat'] = ts_creat
+                tosave_info_dict['systime_creat'] = systime_creat
+                tosave_info_dict['trodes_ver'] = trodes_ver
+                tosave_info_dict['sampling_rate'] = sampling_rate
+
                 save_ses_lims(tosave_info_dict, concat_fold)
                 saved_info = 1
+
+                if reextract_ses_info_only:
+                    return
 
             # create a multirecording time extractor which concatenates the traces in time
             # The function MdaRecordingExtractor doesn't work in our spike interface version (0.93.0)
@@ -447,7 +483,9 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             output_dir = os.path.join(ms_folder, 'output_T' + str(tt_num))
 
             creatparam(mda_params, ms_folder) # Create the parameter and geom file, I think this can
-            # be done only once           
+            # be done only once
+            if reextract_ses_info_only:
+                return
 
             rec = se.MdaRecordingExtractor(ms_folder, raw_fname = mda_name, 
                                            params_fname = 'params.json',
@@ -541,8 +579,9 @@ if __name__ == '__main__':
     # 1: combine multiple sessions together (select the parent folder).
     # 0: only sort 1 session, select the .rec file.
     multisession = 1
-    extract_config = 1 # Will create a readable version of the recording with the
+    extract_conf_file = 1 # Will create a readable version of the recording with the
     # extension .extracted_trodes_header.xml
+    reextract_ses_info_only = 1 # Will stop before doing the actual sorting
 
 
     mda_params = {"samplerate": 30000, "spike_sign": -1}
@@ -588,7 +627,7 @@ if __name__ == '__main__':
     if run_MS:
         ms_folder = run_MS_on_folder(tetrodes_list, path_to_file, 
                                      mda_params, ms_sort_params, multisession,\
-                                     extract_config)
+                                     extract_conf_file, reextract_ses_info_only)
     else:
         ms_folder = '' # can comment this to use the written path instead of choosing manually
 
