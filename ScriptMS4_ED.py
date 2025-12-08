@@ -310,7 +310,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             if extract_conf_file:
                 # Also extract and ideally read the header from the .rec file
                 # maxlines might need to be updated (increased) for larger channel counts?
-                conf_fn = extract_config(rec_fn, conf_maxlines, conf_ext)
+                conf_fn = extract_config( path_to_file, conf_maxlines, conf_ext)
                 # Read this and add the relevant info into tosavedict
                 trodes_config = read_trodes_config(conf_fn)
                 all_trodes_config[data_fn_noext] = trodes_config
@@ -331,8 +331,10 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
             # This will be saved with the first tetrode sorted
 
             prev_figs_fold = os.path.join(ms_folder, 'sample_figures')
+
             # Create a folder for sample figures
-            os.mkdir(prev_figs_fold)
+            if not os.path.isdir(prev_figs_fold):
+                os.mkdir(prev_figs_fold)    
 
     if not tetrodes:
         # default
@@ -343,7 +345,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
     saved_info = 0
    
     # Extract & sort all tetrodes mentioned in tetrode list
-    
+ 
     for tt_num in tetrodes:
         if multisession:
             # load each recording in 'rec' format with mda recording extractor & concatenate them
@@ -507,7 +509,7 @@ def run_MS_on_folder(tetrodes = range(1,33), path_to_file = '',
                 w = sw.plot_timeseries(recording_f)
                 prev_plot_title = 'data sample for' + data_fn_noext + '-tt' + str(tt_num) + ' post-filtering'
                 plt.title(prev_plot_title)
-                plt.savefig(os.pathc.join(prev_plot_path, prev_plot_title) + '.png', bbox_inches='tight')
+                plt.savefig(os.path.join(prev_plot_path, prev_plot_title) + '.png', bbox_inches='tight')
                 plt.close()
                 rec.annotate(is_filtered = True)
             else:
@@ -576,12 +578,13 @@ if __name__ == '__main__':
                      21, 10, 9, 8, 7, 6, 5, 4, 3 ,2 , 1, 32, 31, 30]
     tetrodes_list = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29,
                      21, 10, 9, 8, 7, 6, 5, 4, 3 ,2 , 1, 32, 31, 30]
+    tetrodes_list = [11]
     # 1: combine multiple sessions together (select the parent folder).
     # 0: only sort 1 session, select the .rec file.
-    multisession = 1
+    multisession = 0
     extract_conf_file = 1 # Will create a readable version of the recording with the
     # extension .extracted_trodes_header.xml
-    reextract_ses_info_only = 1 # Will stop before doing the actual sorting
+    reextract_ses_info_only = 0 # Will stop before doing the actual sorting
 
 
     mda_params = {"samplerate": 30000, "spike_sign": -1}
@@ -619,7 +622,7 @@ if __name__ == '__main__':
         #note: maybe we need to move to the dict in the same process; try to do that instead
         res_sb = subprocess.run(["trodesexport", "-mountainsort -rec "+ path_to_file +" -sortingmode 1"],capture_output=True, shell = True)
         print(res_sb)
-        # return to the original working directory
+        # return to the original working deirectory
         os.chdir(cur_dir)
     
     

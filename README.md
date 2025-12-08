@@ -95,7 +95,7 @@ pip install mountainlab_pytools
 To export the data from Trodes: 
 navigate to the Trodes folder and then type
 ```
-`trodesexport -mountainsort -rec <full path to rec file ending in .rec> -sortingmode 1`
+`.\trodesexport -mountainsort -rec <full path to rec file ending in .rec> -sortingmode 1`
 ```
 
 Note, if using Linux, do instead:
